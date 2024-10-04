@@ -1,7 +1,7 @@
 package br.com.FuriniSolutions.model;
 
 import br.com.FuriniSolutions.bean.Cliente;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
@@ -11,7 +11,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class ClienteTableModel extends AbstractTableModel {
 
-    private List<Cliente> linhas = new LinkedList<Cliente>();
+    private List<Cliente> linhas = new ArrayList<>();
     private String[] colunas = {"ID", "Nome", "Endereço"};
 
     @Override
@@ -28,19 +28,16 @@ public class ClienteTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int linha, int coluna) {
         Cliente cliente = linhas.get(linha);
-
-        switch (coluna) {
-            case 0 -> {
-                return cliente.getId();
-            }
-            case 1 -> {
-                return cliente.getNome();
-            }
-            case 2 -> {
-                return cliente.getEndereco();
-            }
-            default -> throw new AssertionError();
-        }
+        return switch (coluna) {
+            case 0 ->
+                cliente.getId();
+            case 1 ->
+                cliente.getNome();
+            case 2 ->
+                cliente.getEndereco();
+            default ->
+                throw new IllegalArgumentException("Coluna inválida: " + coluna);
+        };
 
     }
 
@@ -51,22 +48,25 @@ public class ClienteTableModel extends AbstractTableModel {
 
     //adiciona a categoria na tabela
     public void add(Cliente cliente) {
+        int rowIndex = linhas.size();
         this.linhas.add(cliente);
-        this.fireTableDataChanged();
+        this.fireTableRowsInserted(rowIndex, rowIndex);
     }
 
     //adiciona uma lista de categorias na lista desta classe
     public void addList(List<Cliente> clientes) {
-        this.linhas = clientes;
+        this.linhas.clear();
+        this.linhas.addAll(clientes);
         this.fireTableDataChanged();
     }
 
     //deleta uma categoria da lista da tabela
     public void delete(Cliente cliente) {
+        int rowIndex = linhas.indexOf(cliente);
         this.linhas.remove(cliente);
-        this.fireTableDataChanged();
+        this.fireTableRowsDeleted(rowIndex, rowIndex);//faz a alteraçõa apenas naquela linha da tabela
     }
-    
+
     public Cliente getCliente(int linha) {
         return linhas.get(linha);
     }
