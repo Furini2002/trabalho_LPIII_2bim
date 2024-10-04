@@ -8,10 +8,11 @@ import br.com.FuriniSolutions.bean.Cliente;
 import br.com.FuriniSolutions.dao.ClienteDAO;
 import br.com.FuriniSolutions.model.ClienteTableModel;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
-import java.util.List;
+import java.sql.SQLException;
 import javax.swing.JOptionPane;
 
 /**
@@ -20,19 +21,35 @@ import javax.swing.JOptionPane;
  */
 public class CadastrarCliente extends javax.swing.JFrame {
 
-    ClienteDAO clienteDao = new ClienteDAO(ConnectionsFactory.createConnetionToMySQL());
+    //ClienteDAO clienteDao = new ClienteDAO(ConnectionsFactory.createConnetionToMySQL());
     //private List<Observer> observers;
     private ClienteTableModel tbm;
     private Cliente clienteSelecionado;
-    private String type = "salvar";
+
+    private enum OperationType {
+        SAVE, EDIT
+    };
+    private OperationType type = OperationType.SAVE;
 
     public CadastrarCliente() {
         initComponents();
+
+        //diferenciando o jtf do id, pois não e editavel
+        jtfId.setBackground(Color.LIGHT_GRAY);
+        jtfId.setForeground(Color.DARK_GRAY);
         jtfId.setEditable(false);
+
+        jtfNome.requestFocus();
 
         tbm = new ClienteTableModel();
         jtblCliente.setModel(tbm);
-        tbm.addList(clienteDao.findAll());
+
+        try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
+            ClienteDAO dao = new ClienteDAO(con);
+            tbm.addList(dao.findAll());
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
 
         btnEditar.setEnabled(false);
         btnExcluir.setEnabled(false);
@@ -238,33 +255,37 @@ public class CadastrarCliente extends javax.swing.JFrame {
 
             if (confirmacao == JOptionPane.YES_OPTION) {
 
-                if (clienteDao.delete(clienteSelecionado.getId())) {
-                    tbm.delete(clienteSelecionado);
-                    clienteSelecionado = null;
+                try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
+                    ClienteDAO clienteDao = new ClienteDAO(con);
 
-                    btnSalvar.setEnabled(true);
-                    btnCancelar.setEnabled(true);
+                    try {
+                        if (clienteDao.delete(clienteSelecionado.getId())) {
+                            tbm.delete(clienteSelecionado);
+                            clienteSelecionado = null;
 
-                    btnEditar.setEnabled(false);
-                    btnExcluir.setEnabled(false);
+                            btnSalvar.setEnabled(true);
+                            btnCancelar.setEnabled(true);
 
-                    limparCampos();
+                            btnEditar.setEnabled(false);
+                            btnExcluir.setEnabled(false);
 
-                } else {
-                    int resposta = JOptionPane.showConfirmDialog(null, "Não é possível excluir este item, pois ele está associado a um produto. Para prosseguir com a exclusão, primeiro remova os produtos vinculados.", "Erro", JOptionPane.YES_OPTION, JOptionPane.ERROR_MESSAGE);
-                    btnSalvar.setEnabled(true);
-                    btnCancelar.setEnabled(true);
+                            limparCampos();
+                        }
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(this, "Erro ao deletar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
 
-                    btnEditar.setEnabled(false);
-                    btnExcluir.setEnabled(false);
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
 
             }
         }
+
     }//GEN-LAST:event_btnExcluirActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
-        this.type = "edit";
+        this.type = OperationType.EDIT;
 
         btnSalvar.setEnabled(true);
         btnCancelar.setEnabled(true);
@@ -283,7 +304,7 @@ public class CadastrarCliente extends javax.swing.JFrame {
         if (jtfNome.getText().isEmpty()) {
             int resposta = JOptionPane.showConfirmDialog(null, "O nome do cliente não pode ser nulo", "Confirmação", JOptionPane.OK_OPTION);
         } else {
-            if (this.type.equalsIgnoreCase("edit")) { //edita no banco
+            if (this.type == OperationType.EDIT) { //edita no banco
                 if (clienteSelecionado == null) {
                     JOptionPane.showMessageDialog(this, "Selecione um item na tabela");
                 } else {
@@ -297,11 +318,21 @@ public class CadastrarCliente extends javax.swing.JFrame {
                         clienteSelecionado.setNome(jtfNome.getText());
                         clienteSelecionado.setEndereco(jtfEndereco.getText());
 
-                        clienteDao.update(clienteSelecionado);
+                        try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
+                            ClienteDAO dao = new ClienteDAO(con);
+                            try {
+                                dao.create(clienteSelecionado);
+                            } catch (Exception e) {
+                                JOptionPane.showMessageDialog(this, "Erro ao salvar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                            }
+                        } catch (SQLException e) {
+                            JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                        }
+
                         tbm.fireTableDataChanged();
 
                         limparCampos();
-                        this.type = "salvar";
+                        this.type = OperationType.SAVE;
 
                         btnSalvar.setEnabled(true);
                         btnCancelar.setEnabled(true);
@@ -319,7 +350,17 @@ public class CadastrarCliente extends javax.swing.JFrame {
                 cliente.setNome(jtfNome.getText());
                 cliente.setEndereco(jtfEndereco.getText());
 
-                clienteDao.create(cliente);
+                try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
+                    ClienteDAO dao = new ClienteDAO(con);
+                    try {
+                        dao.create(cliente);
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(this, "Erro ao editar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                }
 
                 limparCampos();
                 tbm.add(cliente);
@@ -338,6 +379,8 @@ public class CadastrarCliente extends javax.swing.JFrame {
     }//GEN-LAST:event_jtfIdActionPerformed
 
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
+        jtblCliente.clearSelection();
+
         btnSalvar.setEnabled(true);
         btnCancelar.setEnabled(true);
 
@@ -359,16 +402,24 @@ public class CadastrarCliente extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CadastrarCliente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(CadastrarCliente.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CadastrarCliente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(CadastrarCliente.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CadastrarCliente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(CadastrarCliente.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CadastrarCliente.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(CadastrarCliente.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
