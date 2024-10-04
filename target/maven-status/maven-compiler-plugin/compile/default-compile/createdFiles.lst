@@ -1,0 +1,11 @@
+br\com\FuriniSolutions\bean\NotaFiscal.class
+br\com\FuriniSolutions\dao\NotaFiscalDAO.class
+br\com\FuriniSolutions\util\ConnectionsFactory.class
+br\com\FuriniSolutions\dao\ProdutoDAO.class
+br\com\FuriniSolutions\bean\Cliente.class
+br\com\FuriniSolutions\bean\Produto.class
+br\com\FuriniSolutions\util\DataUtil.class
+br\com\FuriniSolutions\dao\Dao.class
+br\com\FuriniSolutions\sql\PopulaBD.class
+br\com\FuriniSolutions\dao\ClienteDAO.class
+br\com\FuriniSolutions\bean\ItemNota.class
