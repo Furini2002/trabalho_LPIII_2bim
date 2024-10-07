@@ -304,7 +304,7 @@ public class CadastrarCliente extends javax.swing.JFrame {
         if (jtfNome.getText().isEmpty()) {
             int resposta = JOptionPane.showConfirmDialog(null, "O nome do cliente não pode ser nulo", "Confirmação", JOptionPane.OK_OPTION);
         } else {
-            if (this.type == OperationType.EDIT) { //edita no banco
+            if (this.type == OperationType.EDIT) { //edita no banco               
                 if (clienteSelecionado == null) {
                     JOptionPane.showMessageDialog(this, "Selecione um item na tabela");
                 } else {
@@ -321,7 +321,7 @@ public class CadastrarCliente extends javax.swing.JFrame {
                         try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
                             ClienteDAO dao = new ClienteDAO(con);
                             try {
-                                dao.create(clienteSelecionado);
+                                dao.update(clienteSelecionado);
                             } catch (Exception e) {
                                 JOptionPane.showMessageDialog(this, "Erro ao salvar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                             }
@@ -345,7 +345,7 @@ public class CadastrarCliente extends javax.swing.JFrame {
                     }
 
                 }
-            } else { //cadastra no banco
+            } else { //cadastra no banco                
                 Cliente cliente = new Cliente();
                 cliente.setNome(jtfNome.getText());
                 cliente.setEndereco(jtfEndereco.getText());
