@@ -19,7 +19,7 @@ import javax.swing.JOptionPane;
  *
  * @author lucas
  */
-public class CadastrarCliente extends javax.swing.JFrame {
+public class ClienteCRUDView extends javax.swing.JFrame {
 
     //ClienteDAO clienteDao = new ClienteDAO(ConnectionsFactory.createConnetionToMySQL());
     //private List<Observer> observers;
@@ -31,7 +31,7 @@ public class CadastrarCliente extends javax.swing.JFrame {
     };
     private OperationType type = OperationType.SAVE;
 
-    public CadastrarCliente() {
+    public ClienteCRUDView() {
         initComponents();
 
         //diferenciando o jtf do id, pois não e editavel
@@ -406,27 +406,28 @@ public class CadastrarCliente extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CadastrarCliente.class
+            java.util.logging.Logger.getLogger(ClienteCRUDView.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
 
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CadastrarCliente.class
+            java.util.logging.Logger.getLogger(ClienteCRUDView.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
 
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CadastrarCliente.class
+            java.util.logging.Logger.getLogger(ClienteCRUDView.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
 
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CadastrarCliente.class
+            java.util.logging.Logger.getLogger(ClienteCRUDView.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new CadastrarCliente().setVisible(true);
+                new ClienteCRUDView().setVisible(true);
             }
         });
     }
