@@ -39,10 +39,10 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
         jtfId.setForeground(Color.DARK_GRAY);
         jtfId.setEditable(false);
 
-        jtfNome.requestFocus();
+        jtfDescricao.requestFocus();
 
         tbm = new ClienteTableModel();
-        jtblCliente.setModel(tbm);
+        tableProdutos.setModel(tbm);
 
         try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
             ClienteDAO dao = new ClienteDAO(con);
@@ -54,10 +54,10 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
         btnEditar.setEnabled(false);
         btnExcluir.setEnabled(false);
 
-        jtblCliente.addMouseListener(new MouseAdapter() {
+        tableProdutos.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int linha = jtblCliente.getSelectedRow();
+                int linha = tableProdutos.getSelectedRow();
                 Cliente cliente = tbm.getCliente(linha);
 
                 clienteSelecionado = cliente;
@@ -78,8 +78,8 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
 
     private void populaForm(Cliente cliente) {
         jtfId.setText(String.valueOf(cliente.getId()));
-        jtfNome.setText(cliente.getNome());
-        jtfEndereco.setText(cliente.getEndereco());
+        jtfDescricao.setText(cliente.getNome());
+        jtfValor.setText(cliente.getEndereco());
     }
 
     /**
@@ -91,19 +91,19 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jtfNome = new javax.swing.JTextField();
-        jtfEndereco = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        lblDescricao = new javax.swing.JLabel();
+        jtfDescricao = new javax.swing.JTextField();
+        jtfValor = new javax.swing.JTextField();
+        lblValor = new javax.swing.JLabel();
         btnExcluir = new javax.swing.JButton();
         btnEditar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jtblCliente = new javax.swing.JTable();
+        tableProdutos = new javax.swing.JTable();
         btnCancelar = new javax.swing.JButton();
         btnSalvar = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jtfId = new javax.swing.JTextField();
-        jlblID = new javax.swing.JLabel();
+        lblID = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addMouseListener(new java.awt.event.MouseAdapter() {
@@ -112,15 +112,15 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("Nome");
+        lblDescricao.setText("Nome");
 
-        jtfNome.addActionListener(new java.awt.event.ActionListener() {
+        jtfDescricao.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jtfNomeActionPerformed(evt);
+                jtfDescricaoActionPerformed(evt);
             }
         });
 
-        jLabel2.setText("Endereco");
+        lblValor.setText("Valor");
 
         btnExcluir.setLabel("Excluir");
         btnExcluir.addActionListener(new java.awt.event.ActionListener() {
@@ -136,7 +136,7 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
             }
         });
 
-        jtblCliente.setModel(new javax.swing.table.DefaultTableModel(
+        tableProdutos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -147,7 +147,7 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jtblCliente);
+        jScrollPane1.setViewportView(tableProdutos);
 
         btnCancelar.setLabel("Cancelar");
         btnCancelar.addActionListener(new java.awt.event.ActionListener() {
@@ -163,7 +163,7 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
             }
         });
 
-        jLabel3.setText("Lista de clientes");
+        jLabel3.setText("Lista de produtos");
 
         jtfId.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -171,66 +171,70 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
             }
         });
 
-        jlblID.setText("ID");
+        lblID.setText("ID");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(28, 28, 28)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnSalvar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCancelar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnEditar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnExcluir))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(18, 18, 18)
-                        .addComponent(jtfEndereco))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addComponent(jlblID)
-                        .addGap(18, 18, 18)
-                        .addComponent(jtfId, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel1)
-                        .addGap(18, 18, 18)
-                        .addComponent(jtfNome)))
-                .addGap(28, 28, 28))
-            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 755, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel3)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(28, 28, 28)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblValor)
+                        .addGap(18, 18, 18)
+                        .addComponent(jtfValor, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblDescricao)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jtfDescricao, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnSalvar)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnCancelar)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnEditar)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnExcluir))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblID)
+                                .addGap(34, 34, 34)
+                                .addComponent(jtfId, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(31, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(15, 15, 15)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jtfNome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jtfId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jlblID))
+                    .addComponent(lblID))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jtfEndereco, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblDescricao)
+                    .addComponent(jtfDescricao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblValor)
+                    .addComponent(jtfValor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnExcluir)
-                    .addComponent(btnEditar)
                     .addComponent(btnSalvar)
-                    .addComponent(btnCancelar))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
+                    .addComponent(btnCancelar)
+                    .addComponent(btnEditar)
+                    .addComponent(btnExcluir))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -240,9 +244,9 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jtfNomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfNomeActionPerformed
+    private void jtfDescricaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfDescricaoActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jtfNomeActionPerformed
+    }//GEN-LAST:event_jtfDescricaoActionPerformed
 
     private void btnExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcluirActionPerformed
         if (clienteSelecionado == null) {
@@ -301,7 +305,7 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCancelarActionPerformed
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
-        if (jtfNome.getText().isEmpty()) {
+        if (jtfDescricao.getText().isEmpty()) {
             int resposta = JOptionPane.showConfirmDialog(null, "O nome do cliente não pode ser nulo", "Confirmação", JOptionPane.OK_OPTION);
         } else {
             if (this.type == OperationType.EDIT) { //edita no banco               
@@ -315,8 +319,8 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
 
                     if (confirmacao == JOptionPane.YES_OPTION) {
 
-                        clienteSelecionado.setNome(jtfNome.getText());
-                        clienteSelecionado.setEndereco(jtfEndereco.getText());
+                        clienteSelecionado.setNome(jtfDescricao.getText());
+                        clienteSelecionado.setEndereco(jtfValor.getText());
 
                         try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
                             ClienteDAO dao = new ClienteDAO(con);
@@ -347,8 +351,8 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
                 }
             } else { //cadastra no banco                
                 Cliente cliente = new Cliente();
-                cliente.setNome(jtfNome.getText());
-                cliente.setEndereco(jtfEndereco.getText());
+                cliente.setNome(jtfDescricao.getText());
+                cliente.setEndereco(jtfValor.getText());
 
                 try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
                     ClienteDAO dao = new ClienteDAO(con);
@@ -370,8 +374,8 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
 
     private void limparCampos() {
         jtfId.setText("");
-        jtfNome.setText("");
-        jtfEndereco.setText("");
+        jtfDescricao.setText("");
+        jtfValor.setText("");
     }
 
     private void jtfIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfIdActionPerformed
@@ -379,7 +383,7 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_jtfIdActionPerformed
 
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
-        jtblCliente.clearSelection();
+        tableProdutos.clearSelection();
 
         btnSalvar.setEnabled(true);
         btnCancelar.setEnabled(true);
@@ -439,14 +443,14 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
     private javax.swing.JButton btnEditar;
     private javax.swing.JButton btnExcluir;
     private javax.swing.JButton btnSalvar;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel jlblID;
-    private javax.swing.JTable jtblCliente;
-    private javax.swing.JTextField jtfEndereco;
+    private javax.swing.JTextField jtfDescricao;
     private javax.swing.JTextField jtfId;
-    private javax.swing.JTextField jtfNome;
+    private javax.swing.JTextField jtfValor;
+    private javax.swing.JLabel lblDescricao;
+    private javax.swing.JLabel lblID;
+    private javax.swing.JLabel lblValor;
+    private javax.swing.JTable tableProdutos;
     // End of variables declaration//GEN-END:variables
 }
