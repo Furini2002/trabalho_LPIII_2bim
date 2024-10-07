@@ -2,6 +2,7 @@ package br.com.FuriniSolutions.model;
 
 import br.com.FuriniSolutions.bean.Cliente;
 import br.com.FuriniSolutions.bean.Produto;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -13,7 +14,9 @@ import javax.swing.table.AbstractTableModel;
 public class ProdutoTableModel extends AbstractTableModel {
 
     private List<Produto> linhas = new ArrayList<>();
-    private String[] colunas = {"ID", "Descrição", "Valor"};
+    private String[] colunas = {"ID", "Descrição", "Valor (R$)"};
+    // Criação do DecimalFormat para formatar com vírgula e duas casas decimais
+    private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
 
     @Override
     public int getRowCount() {
@@ -35,7 +38,7 @@ public class ProdutoTableModel extends AbstractTableModel {
             case 1 ->
                 produto.getDescricao();
             case 2 ->
-                produto.getValor();
+                formatadorDecimal.format(produto.getValor());
             default ->
                 throw new IllegalArgumentException("Coluna inválida: " + coluna);
         };
@@ -68,7 +71,7 @@ public class ProdutoTableModel extends AbstractTableModel {
         this.fireTableRowsDeleted(rowIndex, rowIndex);//faz a alteraçõa apenas naquela linha da tabela
     }
 
-    public Produto getCliente(int linha) {
+    public Produto getProduto(int linha) {
         return linhas.get(linha);
     }
 

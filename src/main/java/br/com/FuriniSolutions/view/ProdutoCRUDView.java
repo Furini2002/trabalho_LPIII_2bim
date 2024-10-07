@@ -5,8 +5,11 @@
 package br.com.FuriniSolutions.view;
 
 import br.com.FuriniSolutions.bean.Cliente;
+import br.com.FuriniSolutions.bean.Produto;
 import br.com.FuriniSolutions.dao.ClienteDAO;
+import br.com.FuriniSolutions.dao.ProdutoDAO;
 import br.com.FuriniSolutions.model.ClienteTableModel;
+import br.com.FuriniSolutions.model.ProdutoTableModel;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
@@ -23,8 +26,8 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
 
     //ClienteDAO clienteDao = new ClienteDAO(ConnectionsFactory.createConnetionToMySQL());
     //private List<Observer> observers;
-    private ClienteTableModel tbm;
-    private Cliente clienteSelecionado;
+    private ProdutoTableModel tbm;
+    private Produto produtoSelecionado;
 
     private enum OperationType {
         SAVE, EDIT
@@ -41,11 +44,11 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
 
         jtfDescricao.requestFocus();
 
-        tbm = new ClienteTableModel();
+        tbm = new ProdutoTableModel();
         tableProdutos.setModel(tbm);
 
         try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
-            ClienteDAO dao = new ClienteDAO(con);
+            ProdutoDAO dao = new ProdutoDAO(con);
             tbm.addList(dao.findAll());
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
@@ -58,17 +61,14 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int linha = tableProdutos.getSelectedRow();
-                Cliente cliente = tbm.getCliente(linha);
+                Produto produto = tbm.getProduto(linha);
 
-                clienteSelecionado = cliente;
+                produtoSelecionado = produto;
 
-                if (jtfId.getText().trim().isEmpty()) {
-                    btnSalvar.setEnabled(false);
-                    btnCancelar.setEnabled(false);
-
-                    btnEditar.setEnabled(true);
-                    btnExcluir.setEnabled(true);
-                }
+                btnSalvar.setEnabled(false);
+                btnCancelar.setEnabled(false);
+                btnEditar.setEnabled(true);
+                btnExcluir.setEnabled(true);
 
             }
 
@@ -76,10 +76,10 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
 
     }
 
-    private void populaForm(Cliente cliente) {
-        jtfId.setText(String.valueOf(cliente.getId()));
-        jtfDescricao.setText(cliente.getNome());
-        jtfValor.setText(cliente.getEndereco());
+    private void populaForm(Produto produto) {
+        jtfId.setText(String.valueOf(produto.getId()));
+        jtfDescricao.setText(produto.getDescricao());
+        jtfValor.setText(String.valueOf(produto.getValor()));
     }
 
     /**
@@ -105,7 +105,10 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
         jtfId = new javax.swing.JTextField();
         lblID = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Produto");
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        setFocusTraversalPolicyProvider(true);
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 formMouseClicked(evt);
@@ -120,7 +123,13 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
             }
         });
 
-        lblValor.setText("Valor");
+        jtfValor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jtfValorActionPerformed(evt);
+            }
+        });
+
+        lblValor.setText("Valor (R$)");
 
         btnExcluir.setLabel("Excluir");
         btnExcluir.addActionListener(new java.awt.event.ActionListener() {
@@ -178,40 +187,44 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel3)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(28, 28, 28)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblValor)
-                        .addGap(18, 18, 18)
-                        .addComponent(jtfValor, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblDescricao)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jtfDescricao, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap()
+                                .addComponent(jLabel3))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnSalvar)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnCancelar)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnEditar)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnExcluir))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblID)
-                                .addGap(34, 34, 34)
-                                .addComponent(jtfId, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(31, Short.MAX_VALUE))))
+                                .addGap(28, 28, 28)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(btnSalvar)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btnCancelar)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btnEditar)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btnExcluir))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addGroup(layout.createSequentialGroup()
+                                                    .addComponent(lblDescricao)
+                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED))
+                                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                    .addComponent(lblID)
+                                                    .addGap(34, 34, 34)))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(lblValor)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jtfValor, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jtfId, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jtfDescricao, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -230,11 +243,11 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
                     .addComponent(jtfValor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnSalvar)
-                    .addComponent(btnCancelar)
+                    .addComponent(btnExcluir)
                     .addComponent(btnEditar)
-                    .addComponent(btnExcluir))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                    .addComponent(btnCancelar)
+                    .addComponent(btnSalvar))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -242,6 +255,7 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jtfDescricaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfDescricaoActionPerformed
@@ -249,7 +263,7 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_jtfDescricaoActionPerformed
 
     private void btnExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcluirActionPerformed
-        if (clienteSelecionado == null) {
+        if (produtoSelecionado == null) {
             JOptionPane.showMessageDialog(this, "Selecione um item na tabela");
         } else {
             int confirmacao = JOptionPane.showConfirmDialog(this,
@@ -260,23 +274,22 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
             if (confirmacao == JOptionPane.YES_OPTION) {
 
                 try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
-                    ClienteDAO clienteDao = new ClienteDAO(con);
+                    ProdutoDAO dao = new ProdutoDAO(con);
 
                     try {
-                        if (clienteDao.delete(clienteSelecionado.getId())) {
-                            tbm.delete(clienteSelecionado);
-                            clienteSelecionado = null;
+                        if (dao.delete(produtoSelecionado.getId())) {
+                            tbm.delete(produtoSelecionado);
+                            produtoSelecionado = null;
 
                             btnSalvar.setEnabled(true);
                             btnCancelar.setEnabled(true);
-
                             btnEditar.setEnabled(false);
                             btnExcluir.setEnabled(false);
 
                             limparCampos();
                         }
                     } catch (Exception e) {
-                        JOptionPane.showMessageDialog(this, "Erro ao deletar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "Erro ao deletar produto: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                     }
 
                 } catch (SQLException e) {
@@ -293,11 +306,10 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
 
         btnSalvar.setEnabled(true);
         btnCancelar.setEnabled(true);
-
         btnEditar.setEnabled(false);
         btnExcluir.setEnabled(false);
 
-        populaForm(clienteSelecionado);
+        populaForm(produtoSelecionado);
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
@@ -305,71 +317,88 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCancelarActionPerformed
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
-        if (jtfDescricao.getText().isEmpty()) {
-            int resposta = JOptionPane.showConfirmDialog(null, "O nome do cliente não pode ser nulo", "Confirmação", JOptionPane.OK_OPTION);
+        if (jtfDescricao.getText().trim().isEmpty() || jtfValor.getText().trim().isEmpty()) {
+            JOptionPane.showConfirmDialog(null, "Todos os campos devem ser preenchidos", "Confirmação", JOptionPane.OK_OPTION);
         } else {
-            if (this.type == OperationType.EDIT) { //edita no banco               
-                if (clienteSelecionado == null) {
-                    JOptionPane.showMessageDialog(this, "Selecione um item na tabela");
-                } else {
-                    int confirmacao = JOptionPane.showConfirmDialog(this,
-                            "Tem certeza de que deseja salvar as alterações este item?",
-                            "Confirmação de Edição",
-                            JOptionPane.YES_NO_OPTION);
+            // Verifica se o campo jtfValor contém apenas números e vírgula/ponto
+            String valorTexto = jtfValor.getText().trim();
 
-                    if (confirmacao == JOptionPane.YES_OPTION) {
+            if (!valorTexto.matches("[0-9,.]+")) {
+                JOptionPane.showMessageDialog(this, "O campo valor deve conter apenas números", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
+                return; 
+            }
 
-                        clienteSelecionado.setNome(jtfDescricao.getText());
-                        clienteSelecionado.setEndereco(jtfValor.getText());
+            // Substitui vírgulas por pontos para conversão em Double
+            valorTexto = valorTexto.replace(",", ".");
 
-                        try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
-                            ClienteDAO dao = new ClienteDAO(con);
-                            try {
-                                dao.update(clienteSelecionado);
-                            } catch (Exception e) {
-                                JOptionPane.showMessageDialog(this, "Erro ao salvar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            try {
+                double valor = Double.parseDouble(valorTexto);
+
+                if (this.type == OperationType.EDIT) { // edita no banco               
+                    if (produtoSelecionado == null) {
+                        JOptionPane.showMessageDialog(this, "Selecione um item na tabela");
+                    } else {
+                        int confirmacao = JOptionPane.showConfirmDialog(this,
+                                "Tem certeza de que deseja salvar as alterações este item?",
+                                "Confirmação de Edição",
+                                JOptionPane.YES_NO_OPTION);
+
+                        if (confirmacao == JOptionPane.YES_OPTION) {
+
+                            produtoSelecionado.setDescricao(jtfDescricao.getText());
+                            produtoSelecionado.setValor(valor);
+
+                            try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
+                                ProdutoDAO dao = new ProdutoDAO(con);
+                                try {
+                                    dao.update(produtoSelecionado);
+                                } catch (Exception e) {
+                                    JOptionPane.showMessageDialog(this, "Erro ao editar produto: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                                }
+                            } catch (SQLException e) {
+                                JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                             }
-                        } catch (SQLException e) {
-                            JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+
+                            tbm.fireTableDataChanged();
+
+                            limparCampos();
+                            this.type = OperationType.SAVE;
+
+                            btnSalvar.setEnabled(true);
+                            btnCancelar.setEnabled(true);
+                            btnEditar.setEnabled(false);
+                            btnExcluir.setEnabled(false);
+
+                        } else {
+                            limparCampos();
                         }
 
-                        tbm.fireTableDataChanged();
+                    }
+                } else { // cadastra no banco                
+                    Produto produto = new Produto();
+                    produto.setDescricao(jtfDescricao.getText());
+                    produto.setValor(valor);
 
-                        limparCampos();
-                        this.type = OperationType.SAVE;
+                    try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
+                        ProdutoDAO dao = new ProdutoDAO(con);
+                        try {
+                            dao.create(produto);
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(this, "Erro ao salvar produto: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                        }
 
-                        btnSalvar.setEnabled(true);
-                        btnCancelar.setEnabled(true);
-
-                        btnEditar.setEnabled(false);
-                        btnExcluir.setEnabled(false);
-
-                    } else {
-                        limparCampos();
+                    } catch (SQLException e) {
+                        JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                     }
 
+                    limparCampos();
+                    tbm.add(produto);
                 }
-            } else { //cadastra no banco                
-                Cliente cliente = new Cliente();
-                cliente.setNome(jtfDescricao.getText());
-                cliente.setEndereco(jtfValor.getText());
-
-                try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
-                    ClienteDAO dao = new ClienteDAO(con);
-                    try {
-                        dao.create(cliente);
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(this, "Erro ao editar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-                    }
-
-                } catch (SQLException e) {
-                    JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-                }
-
-                limparCampos();
-                tbm.add(cliente);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Valor inválido. Por favor, insira um número válido.", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
             }
         }
+
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void limparCampos() {
@@ -391,6 +420,10 @@ public class ProdutoCRUDView extends javax.swing.JFrame {
         btnEditar.setEnabled(false);
         btnExcluir.setEnabled(false);
     }//GEN-LAST:event_formMouseClicked
+
+    private void jtfValorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfValorActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jtfValorActionPerformed
 
     /**
      * @param args the command line arguments
