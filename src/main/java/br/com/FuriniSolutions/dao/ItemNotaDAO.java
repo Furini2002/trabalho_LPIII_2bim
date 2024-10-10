@@ -1,13 +1,10 @@
 package br.com.FuriniSolutions.dao;
 
-import br.com.FuriniSolutions.bean.Cliente;
 import br.com.FuriniSolutions.bean.ItemNota;
 import br.com.FuriniSolutions.bean.NotaFiscal;
 import br.com.FuriniSolutions.bean.Produto;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
-import br.com.FuriniSolutions.util.DataUtil;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -47,38 +44,52 @@ public class ItemNotaDAO implements Dao<Integer, ItemNota> { // <o tipo de dados
     }
 
     @Override
-    public ItemNota retrive(Integer pk) {
-        ItemNota itemNota = null; //produto a ser retornado
+public ItemNota retrive(Integer pk) {
+    ItemNota itemNota = null;
 
-        if (pk != null) {
-            String sql = "SELECT id, quantidade, valorItem, produto_id, notaFiscal_id FROM itemnota WHERE id = ?";
+    if (pk == null) {
+        return null; // Se o pk for nulo, retorna null diretamente
+    }
 
-            try ( PreparedStatement query = con.prepareStatement(sql)) {
-                query.setInt(1, pk);//coloca a pk que foi colocada como parametro do metodo
+    String sql = "SELECT id, quantidade, valorItem, produto_id, notaFiscal_id FROM itemnota WHERE id = ?";
 
-                try ( ResultSet rs = query.executeQuery()) {
+    try (PreparedStatement query = con.prepareStatement(sql)) {
+        query.setInt(1, pk);
 
-                    if (rs.next()) {//passa o cursor para a primeira linha
-                        itemNota = new ItemNota();
-                        itemNota.setId(rs.getInt("id"));
-                        itemNota.setQuantidade(rs.getInt("quantidade"));
-                        itemNota.setValorItem(rs.getDouble("valorItem"));
+        try (ResultSet rs = query.executeQuery()) {
+            if (rs.next()) {
+                itemNota = new ItemNota();
+                itemNota.setId(rs.getInt("id"));
+                itemNota.setQuantidade(rs.getInt("quantidade"));
+                itemNota.setValorItem(rs.getDouble("valorItem"));
 
-                        ProdutoDAO produtoDao = new ProdutoDAO(ConnectionsFactory.createConnetionToMySQL());
-                        itemNota.setProduto(produtoDao.retrive(rs.getInt("produto_id")));
-
-                        NotaFiscalDAO notaFiscalDao = new NotaFiscalDAO(ConnectionsFactory.createConnetionToMySQL());
-                        itemNota.setNotaFiscal(notaFiscalDao.retrive(rs.getInt("notaFiscal_id")));
-                    }
+                // Usando DAOs existentes para recuperar Produto e NotaFiscal
+                ProdutoDAO produtoDao = new ProdutoDAO(con);
+                Produto produto = produtoDao.retrive(rs.getInt("produto_id"));
+                if (produto != null) {
+                    itemNota.setProduto(produto);
+                } else {
+                    System.out.println("Produto não encontrado para o ID: " + rs.getInt("produto_id"));
                 }
 
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+                NotaFiscalDAO notaFiscalDao = new NotaFiscalDAO(con);
+                NotaFiscal notaFiscal = notaFiscalDao.retrive(rs.getInt("notaFiscal_id"));
+                if (notaFiscal != null) {
+                    itemNota.setNotaFiscal(notaFiscal);
+                } else {
+                    System.out.println("Nota Fiscal não encontrada para o ID: " + rs.getInt("notaFiscal_id"));
+                }
             }
         }
 
-        return itemNota;
+    } catch (Exception e) {
+        System.err.println("Erro ao recuperar ItemNota: " + e.getMessage());
+        e.printStackTrace(); // Exibe o stack trace completo para facilitar a depuração
     }
+
+    return itemNota;
+}
+
 
     @Override
     public void update(ItemNota entity) {
@@ -116,64 +127,78 @@ public class ItemNotaDAO implements Dao<Integer, ItemNota> { // <o tipo de dados
 
     @Override
     public List<ItemNota> findAll() {
-        List<ItemNota> itemnotas = new LinkedList<>();
+    List<ItemNota> itemnotas = new LinkedList<>();
 
-        String sql = "SELECT id, quantidade, valorItem, produto_id, notaFiscal_id FROM itemnota";
+    String sql = "SELECT id, quantidade, valorItem, produto_id, notaFiscal_id FROM itemnota";
 
-        try ( PreparedStatement query = con.prepareStatement(sql)) {
-            try ( ResultSet rs = query.executeQuery()) {
-                while (rs.next()) {
-                    ItemNota itemNota = new ItemNota();
-                    itemNota.setId(rs.getInt("id"));
-                    itemNota.setQuantidade(rs.getInt("quantidade"));
-                    itemNota.setValorItem(rs.getDouble("valorItem"));
+    // Usar uma única conexão para todas as operações
+    try (Connection connection = ConnectionsFactory.createConnetionToMySQL();
+         PreparedStatement query = connection.prepareStatement(sql)) {
 
-                    ProdutoDAO produtoDao = new ProdutoDAO(ConnectionsFactory.createConnetionToMySQL());
-                    itemNota.setProduto(produtoDao.retrive(rs.getInt("produto_id")));
+        try (ResultSet rs = query.executeQuery()) {
+            // Criar os DAOs com a mesma conexão
+            ProdutoDAO produtoDao = new ProdutoDAO(connection);
+            NotaFiscalDAO notaFiscalDao = new NotaFiscalDAO(connection);
 
-                    NotaFiscalDAO notaFiscalDao = new NotaFiscalDAO(ConnectionsFactory.createConnetionToMySQL());
-                    itemNota.setNotaFiscal(notaFiscalDao.retrive(rs.getInt("notaFiscal_id")));
-                    
-                    itemnotas.add(itemNota);
-                }
+            while (rs.next()) {
+                ItemNota itemNota = new ItemNota();
+                itemNota.setId(rs.getInt("id"));
+                itemNota.setQuantidade(rs.getInt("quantidade"));
+                itemNota.setValorItem(rs.getDouble("valorItem"));
+
+                // Reutilizando a mesma conexão para as operações de Produto e NotaFiscal
+                itemNota.setProduto(produtoDao.retrive(rs.getInt("produto_id")));
+                itemNota.setNotaFiscal(notaFiscalDao.retrive(rs.getInt("notaFiscal_id")));
+
+                itemnotas.add(itemNota);
             }
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
 
-        return itemnotas;
+    } catch (Exception e) {
+        System.err.println("Erro ao buscar todos os ItemNotas: " + e.getMessage());
+        e.printStackTrace(); // Exibe o stack trace para facilitar a depuração
     }
+
+    return itemnotas;
+}
+
     
     public List<ItemNota> findAllWithIDNota(Integer id_nota) {
-        List<ItemNota> itemnotas = new LinkedList<>();
+    List<ItemNota> itemnotas = new LinkedList<>();
 
-        String sql = "SELECT id, quantidade, valorItem, produto_id, notaFiscal_id FROM itemnota WHERE notaFiscal_id = ?";
+    String sql = "SELECT id, quantidade, valorItem, produto_id, notaFiscal_id FROM itemnota WHERE notaFiscal_id = ?";
 
-        try ( PreparedStatement query = con.prepareStatement(sql)) {
-            query.setInt(1, id_nota);
-            try ( ResultSet rs = query.executeQuery()) {
-                while (rs.next()) {
-                    ItemNota itemNota = new ItemNota();
-                    itemNota.setId(rs.getInt("id"));
-                    itemNota.setQuantidade(rs.getInt("quantidade"));
-                    itemNota.setValorItem(rs.getDouble("valorItem"));
+    // Usar uma única conexão para todas as operações
+    try (Connection connection = ConnectionsFactory.createConnetionToMySQL();
+         PreparedStatement query = connection.prepareStatement(sql)) {
 
-                    ProdutoDAO produtoDao = new ProdutoDAO(ConnectionsFactory.createConnetionToMySQL());
-                    itemNota.setProduto(produtoDao.retrive(rs.getInt("produto_id")));
+        query.setInt(1, id_nota);
 
-                    NotaFiscalDAO notaFiscalDao = new NotaFiscalDAO(ConnectionsFactory.createConnetionToMySQL());
-                    itemNota.setNotaFiscal(notaFiscalDao.retrive(rs.getInt("notaFiscal_id")));
-                    
-                    itemnotas.add(itemNota);
-                }
+        try (ResultSet rs = query.executeQuery()) {
+            // Criar os DAOs com a mesma conexão
+            ProdutoDAO produtoDao = new ProdutoDAO(connection);
+            NotaFiscalDAO notaFiscalDao = new NotaFiscalDAO(connection);
+
+            while (rs.next()) {
+                ItemNota itemNota = new ItemNota();
+                itemNota.setId(rs.getInt("id"));
+                itemNota.setQuantidade(rs.getInt("quantidade"));
+                itemNota.setValorItem(rs.getDouble("valorItem"));
+
+                // Reutilizando a mesma conexão para as operações de Produto e NotaFiscal
+                itemNota.setProduto(produtoDao.retrive(rs.getInt("produto_id")));
+                itemNota.setNotaFiscal(notaFiscalDao.retrive(rs.getInt("notaFiscal_id")));
+
+                itemnotas.add(itemNota);
             }
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
 
-        return itemnotas;
+    } catch (Exception e) {
+        System.err.println("Erro ao buscar ItemNotas com IDNota: " + e.getMessage());
+        e.printStackTrace(); // Exibe o stack trace para facilitar a depuração
     }
+
+    return itemnotas;
+}
 
 }

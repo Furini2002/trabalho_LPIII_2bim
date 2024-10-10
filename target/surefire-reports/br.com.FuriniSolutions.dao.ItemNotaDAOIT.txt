@@ -1,28 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: br.com.FuriniSolutions.dao.ItemNotaDAOIT
 -------------------------------------------------------------------------------
-Tests run: 6, Failures: 1, Errors: 5, Skipped: 0, Time elapsed: 0.044 s <<< FAILURE! - in br.com.FuriniSolutions.dao.ItemNotaDAOIT
-br.com.FuriniSolutions.dao.ItemNotaDAOIT.testFindAll  Time elapsed: 0.015 s  <<< FAILURE!
-org.opentest4j.AssertionFailedError: A lista de ItemNota não deve estar vazia. ==> expected: <false> but was: <true>
-	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testFindAll(ItemNotaDAOIT.java:192)
-
-br.com.FuriniSolutions.dao.ItemNotaDAOIT.testRetrieve  Time elapsed: 0.008 s  <<< ERROR!
-java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
-	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testRetrieve(ItemNotaDAOIT.java:103)
-
-br.com.FuriniSolutions.dao.ItemNotaDAOIT.testCreate  Time elapsed: 0.001 s  <<< ERROR!
-java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
-	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testCreate(ItemNotaDAOIT.java:69)
-
-br.com.FuriniSolutions.dao.ItemNotaDAOIT.testDelete  Time elapsed: 0 s  <<< ERROR!
-java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
-	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testDelete(ItemNotaDAOIT.java:172)
-
-br.com.FuriniSolutions.dao.ItemNotaDAOIT.testUpdate  Time elapsed: 0.016 s  <<< ERROR!
-java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
-	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testUpdate(ItemNotaDAOIT.java:136)
-
-br.com.FuriniSolutions.dao.ItemNotaDAOIT.testFindAllWithIDNota  Time elapsed: 0 s  <<< ERROR!
-java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
-	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testFindAllWithIDNota(ItemNotaDAOIT.java:215)
+Tests run: 6, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 5.787 s <<< FAILURE! - in br.com.FuriniSolutions.dao.ItemNotaDAOIT
+br.com.FuriniSolutions.dao.ItemNotaDAOIT.testFindAllWithIDNota  Time elapsed: 0.333 s  <<< FAILURE!
+org.opentest4j.AssertionFailedError: A quantidade deve corresponder. ==> expected: <5> but was: <100>
+	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testFindAllWithIDNota(ItemNotaDAOIT.java:266)
 

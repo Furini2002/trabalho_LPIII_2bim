@@ -75,4 +75,10 @@ public class ProdutoTableModel extends AbstractTableModel {
         return linhas.get(linha);
     }
 
+    public void setProdutos(List<Produto> produtos) {
+        this.linhas = produtos;
+    }
+
 }
+
+

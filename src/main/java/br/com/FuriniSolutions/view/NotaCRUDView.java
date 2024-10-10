@@ -13,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import javax.swing.JOptionPane;
 
 /**
@@ -21,7 +22,40 @@ import javax.swing.JOptionPane;
  */
 public class NotaCRUDView extends javax.swing.JFrame {
 
-    
+    public NotaCRUDView() {
+        initComponents();
+
+        jtfDescricao.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                realizarBuscaProduto(evt);
+            }
+        });
+
+    }
+
+    private void realizarBuscaProduto(java.awt.event.KeyEvent evt) {
+        String descricao = jtfDescricao.getText();
+
+        if (descricao.length() > 2) { // Começa a buscar após 2 caracteres
+            try ( Connection connection = ConnectionsFactory.createConnetionToMySQL()) {
+                ProdutoDAO produtoDAO = new ProdutoDAO(connection);
+                List<Produto> produtos = produtoDAO.buscarPorDescricao(descricao);
+
+                // Atualiza a tabela ou sugestão com os produtos encontrados
+                if (produtos != null && !produtos.isEmpty()) {
+                    atualizarTabelaProdutos(produtos);
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Erro ao buscar produtos: " + e.getMessage());
+            }
+        }
+    }
+
+    private void atualizarTabelaProdutos(List<Produto> produtos) {
+        ProdutoTableModel model = (ProdutoTableModel) tableProdutos.getModel();
+        model.setProdutos(produtos);
+        model.fireTableDataChanged();
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -64,6 +98,11 @@ public class NotaCRUDView extends javax.swing.JFrame {
         jtfDescricao.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jtfDescricaoActionPerformed(evt);
+            }
+        });
+        jtfDescricao.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jtfDescricaoKeyReleased(evt);
             }
         });
 
@@ -220,17 +259,17 @@ public class NotaCRUDView extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jtfDescricaoActionPerformed
 
+
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
-        
 
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void btnCancelarProdutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarProdutoActionPerformed
-        
+
     }//GEN-LAST:event_btnCancelarProdutoActionPerformed
 
     private void btnAdicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarActionPerformed
-        
+
 
     }//GEN-LAST:event_btnAdicionarActionPerformed
 
@@ -245,7 +284,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_jtfIdActionPerformed
 
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
-        
+
     }//GEN-LAST:event_formMouseClicked
 
     private void jtfValorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfValorActionPerformed
@@ -259,6 +298,10 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private void jtfTotalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfTotalActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jtfTotalActionPerformed
+
+    private void jtfDescricaoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfDescricaoKeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jtfDescricaoKeyReleased
 
     /**
      * @param args the command line arguments
