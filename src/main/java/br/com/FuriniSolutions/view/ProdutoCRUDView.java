@@ -4,11 +4,8 @@
  */
 package br.com.FuriniSolutions.view;
 
-import br.com.FuriniSolutions.bean.Cliente;
 import br.com.FuriniSolutions.bean.Produto;
-import br.com.FuriniSolutions.dao.ClienteDAO;
 import br.com.FuriniSolutions.dao.ProdutoDAO;
-import br.com.FuriniSolutions.model.ClienteTableModel;
 import br.com.FuriniSolutions.model.ProdutoTableModel;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
 import java.awt.Color;

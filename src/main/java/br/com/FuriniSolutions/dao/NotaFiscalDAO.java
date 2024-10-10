@@ -41,6 +41,24 @@ public class NotaFiscalDAO implements Dao<Integer, NotaFiscal> { // <o tipo de d
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        
+        //salvando os dados de itens nota
+        try ( PreparedStatement query = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            query.setDate(1, (Date) entity.getDataEmissao());
+            query.setInt(2, entity.getCliente().getId());
+            query.executeUpdate();
+
+            try ( ResultSet rs = query.getGeneratedKeys()) {
+                if (rs.next()) {  // Move o cursor para a primeira linha, pois pro padrao vem antes
+                    entity.setId(rs.getInt(1)); //coloca o id no produto            }
+                }
+
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        
     }
 
     @Override

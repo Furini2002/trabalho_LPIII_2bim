@@ -1,12 +1,14 @@
 package br.com.FuriniSolutions.bean;
 
 import java.util.Date;
+import java.util.List;
 
 public class NotaFiscal {
     
     private int id;
     private Date dataEmissao;
     private Cliente cliente;
+    private List<ItemNota> listaItens;
 
     public int getId() {
         return id;
@@ -36,6 +38,13 @@ public class NotaFiscal {
     public String toString() {
         return "NotaFiscal{" + "id=" + id + ", dataEmissao=" + dataEmissao + ", cliente=" + cliente + '}';
     }
-    
+
+    public List<ItemNota> getListaItens() {
+        return listaItens;
+    }
+
+    public void setListaItens(List<ItemNota> listaItens) {
+        this.listaItens = listaItens;
+    }
     
 }

@@ -7,7 +7,7 @@ public class ItemNota {
     private Double valorItem;
     private Produto produto;
     private NotaFiscal notaFiscal;
-
+    
     public int getId() {
         return id;
     }
@@ -53,4 +53,5 @@ public class ItemNota {
         return "ItemNota{" + "id=" + id + ", quantidade=" + quantidade + ", valorItem=" + valorItem + ", produto=" + produto + ", notaFiscal=" + notaFiscal + '}';
     }
     
+       
 }
