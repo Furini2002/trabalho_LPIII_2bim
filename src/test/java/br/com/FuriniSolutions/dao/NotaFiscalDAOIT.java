@@ -22,6 +22,7 @@ public class NotaFiscalDAOIT {
 
     @BeforeEach
     public void setUp() {
+        System.out.println("NOTA FISCAL");
         // Inicializando a conexão com o banco de dados e os DAOs
         connection = ConnectionsFactory.createConnetionToMySQL();
         notaFiscalDAO = new NotaFiscalDAO(connection);
@@ -59,8 +60,8 @@ public class NotaFiscalDAOIT {
         notaFiscalDAO.create(nf);
 
         // Verificando se a nota fiscal foi criada e se o ID foi gerado
-        assertNotNull(nf.getId(), "O ID da NotaFiscal não deve ser nulo após a criação.");
         System.out.println(nf);
+        assertNotNull(nf.getId(), "O ID da NotaFiscal não deve ser nulo após a criação.");        
     }
 
     @Test
@@ -69,8 +70,9 @@ public class NotaFiscalDAOIT {
 
         // Recuperando nota fiscal pelo ID
         NotaFiscal nf = notaFiscalDAO.retrive(1);
-        assertNotNull(nf, "A NotaFiscal não deve ser nula.");
         System.out.println(nf);
+        assertNotNull(nf, "A NotaFiscal não deve ser nula.");
+        
     }
 
     @Test

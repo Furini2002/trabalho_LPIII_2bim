@@ -26,6 +26,7 @@ public class ItemNotaDAOIT {
 
     @BeforeEach
     public void setUp() {
+        System.out.println("ITEM NOTA");
         // Inicializando a conexão e os DAOs
         connection = ConnectionsFactory.createConnetionToMySQL();
         itemNotaDAO = new ItemNotaDAO(connection);
@@ -191,4 +192,49 @@ public class ItemNotaDAOIT {
         assertFalse(itemNotas.isEmpty(), "A lista de ItemNota não deve estar vazia.");
         itemNotas.forEach(itemNota -> System.out.println(itemNota));
     }
+
+    @Test
+    public void testFindAllWithIDNota() {
+        System.out.println("TESTANDO FINDALLWITHIDNOTA");
+
+        // Criando produto
+        Produto produto = new Produto();
+        produto.setDescricao("Produto Teste");
+        produto.setValor(20.0);
+        produtoDAO.create(produto);
+
+        // Criando cliente e nota fiscal
+        Cliente cliente = new Cliente();
+        cliente.setNome("Cliente Teste");
+        cliente.setEndereco("Rua Exemplo");
+        clienteDAO.create(cliente);
+
+        NotaFiscal notaFiscal = new NotaFiscal();
+        notaFiscal.setDataEmissao(DataUtil.dataAtual());
+        notaFiscal.setCliente(cliente);
+        notaFiscalDAO.create(notaFiscal);
+
+        // Criando item nota
+        ItemNota itemNota = new ItemNota();
+        itemNota.setProduto(produto);
+        itemNota.setNotaFiscal(notaFiscal);
+        itemNota.setQuantidade(5);
+        itemNota.setValorItem(100.0);
+        itemNotaDAO.create(itemNota);
+
+        // Chamando o método findAllWithIDNota
+        List<ItemNota> retrievedItemNotas = itemNotaDAO.findAllWithIDNota(notaFiscal.getId());
+
+        // Verificando se o item foi retornado
+        assertNotNull(retrievedItemNotas, "A lista de ItemNota não deve ser nula.");
+        assertFalse(retrievedItemNotas.isEmpty(), "A lista de ItemNota não deve estar vazia.");
+        assertEquals(1, retrievedItemNotas.size(), "Deve haver um item na lista.");
+        ItemNota retrievedItemNota = retrievedItemNotas.get(0);
+
+        // Verificando os valores
+        assertEquals(itemNota.getId(), retrievedItemNota.getId(), "O ID do ItemNota deve corresponder.");
+        assertEquals(itemNota.getQuantidade(), retrievedItemNota.getQuantidade(), "A quantidade deve corresponder.");
+        assertEquals(itemNota.getValorItem(), retrievedItemNota.getValorItem(), "O valor do item deve corresponder.");
+    }
+
 }

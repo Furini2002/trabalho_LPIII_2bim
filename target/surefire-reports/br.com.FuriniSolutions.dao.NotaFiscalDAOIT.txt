@@ -1,0 +1,16 @@
+-------------------------------------------------------------------------------
+Test set: br.com.FuriniSolutions.dao.NotaFiscalDAOIT
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.326 s <<< FAILURE! - in br.com.FuriniSolutions.dao.NotaFiscalDAOIT
+br.com.FuriniSolutions.dao.NotaFiscalDAOIT.testCreateNotaFiscal  Time elapsed: 0.015 s  <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
+	at br.com.FuriniSolutions.dao.NotaFiscalDAOIT.testCreateNotaFiscal(NotaFiscalDAOIT.java:60)
+
+br.com.FuriniSolutions.dao.NotaFiscalDAOIT.testDeleteNotaFiscal  Time elapsed: 0.006 s  <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
+	at br.com.FuriniSolutions.dao.NotaFiscalDAOIT.testDeleteNotaFiscal(NotaFiscalDAOIT.java:121)
+
+br.com.FuriniSolutions.dao.NotaFiscalDAOIT.testUpdateNotaFiscal  Time elapsed: 0.006 s  <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
+	at br.com.FuriniSolutions.dao.NotaFiscalDAOIT.testUpdateNotaFiscal(NotaFiscalDAOIT.java:92)
+

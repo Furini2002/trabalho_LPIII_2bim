@@ -144,5 +144,36 @@ public class ItemNotaDAO implements Dao<Integer, ItemNota> { // <o tipo de dados
 
         return itemnotas;
     }
+    
+    public List<ItemNota> findAllWithIDNota(Integer id_nota) {
+        List<ItemNota> itemnotas = new LinkedList<>();
+
+        String sql = "SELECT id, quantidade, valorItem, produto_id, notaFiscal_id FROM itemnota WHERE notaFiscal_id = ?";
+
+        try ( PreparedStatement query = con.prepareStatement(sql)) {
+            query.setInt(1, id_nota);
+            try ( ResultSet rs = query.executeQuery()) {
+                while (rs.next()) {
+                    ItemNota itemNota = new ItemNota();
+                    itemNota.setId(rs.getInt("id"));
+                    itemNota.setQuantidade(rs.getInt("quantidade"));
+                    itemNota.setValorItem(rs.getDouble("valorItem"));
+
+                    ProdutoDAO produtoDao = new ProdutoDAO(ConnectionsFactory.createConnetionToMySQL());
+                    itemNota.setProduto(produtoDao.retrive(rs.getInt("produto_id")));
+
+                    NotaFiscalDAO notaFiscalDao = new NotaFiscalDAO(ConnectionsFactory.createConnetionToMySQL());
+                    itemNota.setNotaFiscal(notaFiscalDao.retrive(rs.getInt("notaFiscal_id")));
+                    
+                    itemnotas.add(itemNota);
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return itemnotas;
+    }
 
 }

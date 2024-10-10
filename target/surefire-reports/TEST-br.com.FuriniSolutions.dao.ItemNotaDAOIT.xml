@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="br.com.FuriniSolutions.dao.ItemNotaDAOIT" time="0.044" tests="6" errors="5" skipped="0" failures="1">
+  <properties>
+    <property name="java.specification.version" value="17"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="E:\LPIII\2_bim\Trabalho_2bim\target\test-classes;E:\LPIII\2_bim\Trabalho_2bim\target\classes;C:\Users\Aluno\.m2\repository\com\mysql\mysql-connector-j\9.0.0\mysql-connector-j-9.0.0.jar;C:\Users\Aluno\.m2\repository\com\google\protobuf\protobuf-java\4.26.1\protobuf-java-4.26.1.jar;C:\Users\Aluno\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.0\junit-jupiter-api-5.9.0.jar;C:\Users\Aluno\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\Aluno\.m2\repository\org\junit\platform\junit-platform-commons\1.9.0\junit-platform-commons-1.9.0.jar;C:\Users\Aluno\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\Aluno\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.0\junit-jupiter-engine-5.9.0.jar;C:\Users\Aluno\.m2\repository\org\junit\platform\junit-platform-engine\1.9.0\junit-platform-engine-1.9.0.jar;C:\Users\Aluno\.m2\repository\org\junit\platform\junit-platform-launcher\1.9.0\junit-platform-launcher-1.9.0.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="America/Sao_Paulo"/>
+    <property name="os.name" value="Windows 10"/>
+    <property name="java.vm.specification.version" value="17"/>
+    <property name="user.country" value="BR"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-17.0.2\bin"/>
+    <property name="sun.java.command" value="C:\Users\Aluno\AppData\Local\Temp\surefire11471626704693069077\surefirebooter8635016296226223952.jar C:\Users\Aluno\AppData\Local\Temp\surefire11471626704693069077 2024-10-09T22-23-33_394-jvmRun1 surefire5898526465267891917tmp surefire_011445412845156099349tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="test" value="br/com/FuriniSolutions/dao/**/*IT.java"/>
+    <property name="surefire.test.class.path" value="E:\LPIII\2_bim\Trabalho_2bim\target\test-classes;E:\LPIII\2_bim\Trabalho_2bim\target\classes;C:\Users\Aluno\.m2\repository\com\mysql\mysql-connector-j\9.0.0\mysql-connector-j-9.0.0.jar;C:\Users\Aluno\.m2\repository\com\google\protobuf\protobuf-java\4.26.1\protobuf-java-4.26.1.jar;C:\Users\Aluno\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.0\junit-jupiter-api-5.9.0.jar;C:\Users\Aluno\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\Aluno\.m2\repository\org\junit\platform\junit-platform-commons\1.9.0\junit-platform-commons-1.9.0.jar;C:\Users\Aluno\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\Aluno\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.0\junit-jupiter-engine-5.9.0.jar;C:\Users\Aluno\.m2\repository\org\junit\platform\junit-platform-engine\1.9.0\junit-platform-engine-1.9.0.jar;C:\Users\Aluno\.m2\repository\org\junit\platform\junit-platform-launcher\1.9.0\junit-platform-launcher-1.9.0.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\Aluno"/>
+    <property name="user.language" value="pt"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2022-01-18"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-17.0.2"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="E:\LPIII\2_bim\Trabalho_2bim"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\Aluno\AppData\Local\Temp\surefire11471626704693069077\surefirebooter8635016296226223952.jar"/>
+    <property name="jdk.net.URLClassPath.disableClassPathURLCheck" value="true"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="17.0.2+8-LTS-86"/>
+    <property name="user.name" value="Aluno"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="maven.ext.class.path" value="C:\Program Files\NetBeans-14\netbeans\java\maven-nblib\netbeans-eventspy.jar;C:\Program Files\NetBeans-14\netbeans\java\maven-nblib\netbeans-eventspy.jar"/>
+    <property name="localRepository" value="C:\Users\Aluno\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\Aluno\AppData\Local\Temp\"/>
+    <property name="java.version" value="17.0.2"/>
+    <property name="user.dir" value="E:\LPIII\2_bim\Trabalho_2bim"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-17.0.2\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Java\jdk-17.0.2\bin;C:\Program Files\dotnet\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files\Common Files\Autodesk Shared\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\ProgramData\UNIVALI\Portugol Studio;C:\Program Files\Microsoft VS Code\bin;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Shield\;C:\Users\Aluno\AppData\Local\Microsoft\WindowsApps;;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="17.0.2+8-LTS-86"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="61.0"/>
+  </properties>
+  <testcase name="testFindAll" classname="br.com.FuriniSolutions.dao.ItemNotaDAOIT" time="0.015">
+    <failure type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: A lista de ItemNota não deve estar vazia. ==> expected: <false> but was: <true>
+	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testFindAll(ItemNotaDAOIT.java:192)
+]]></failure>
+    <system-out><![CDATA[ITEM NOTA
+TESTANDO FINDALL
+]]></system-out>
+  </testcase>
+  <testcase name="testRetrieve" classname="br.com.FuriniSolutions.dao.ItemNotaDAOIT" time="0.008">
+    <error type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
+	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testRetrieve(ItemNotaDAOIT.java:103)
+]]></error>
+    <system-out><![CDATA[ITEM NOTA
+TESTANDO RETRIEVE
+]]></system-out>
+  </testcase>
+  <testcase name="testCreate" classname="br.com.FuriniSolutions.dao.ItemNotaDAOIT" time="0.001">
+    <error type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
+	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testCreate(ItemNotaDAOIT.java:69)
+]]></error>
+    <system-out><![CDATA[ITEM NOTA
+TESTANDO CREATE
+]]></system-out>
+  </testcase>
+  <testcase name="testDelete" classname="br.com.FuriniSolutions.dao.ItemNotaDAOIT" time="0">
+    <error type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
+	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testDelete(ItemNotaDAOIT.java:172)
+]]></error>
+    <system-out><![CDATA[ITEM NOTA
+TESTANDO DELETE
+]]></system-out>
+  </testcase>
+  <testcase name="testUpdate" classname="br.com.FuriniSolutions.dao.ItemNotaDAOIT" time="0.016">
+    <error type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
+	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testUpdate(ItemNotaDAOIT.java:136)
+]]></error>
+    <system-out><![CDATA[ITEM NOTA
+TESTANDO UPDATE
+]]></system-out>
+  </testcase>
+  <testcase name="testFindAllWithIDNota" classname="br.com.FuriniSolutions.dao.ItemNotaDAOIT" time="0">
+    <error type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "java.util.List.iterator()" because "itemnotas" is null
+	at br.com.FuriniSolutions.dao.ItemNotaDAOIT.testFindAllWithIDNota(ItemNotaDAOIT.java:215)
+]]></error>
+    <system-out><![CDATA[ITEM NOTA
+TESTANDO FINDALLWITHIDNOTA
+]]></system-out>
+  </testcase>
+</testsuite>

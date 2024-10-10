@@ -1,6 +1,7 @@
 package br.com.FuriniSolutions.dao;
 
 import br.com.FuriniSolutions.bean.Cliente;
+import br.com.FuriniSolutions.bean.ItemNota;
 import br.com.FuriniSolutions.bean.NotaFiscal;
 import br.com.FuriniSolutions.bean.Produto;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
@@ -25,6 +26,7 @@ public class NotaFiscalDAO implements Dao<Integer, NotaFiscal> { // <o tipo de d
     public void create(NotaFiscal entity) {
         String sql = "INSERT INTO notafiscal (dataEmissao, cliente_id) values (?, ?);";
 
+        //salvando a nota fiscal
         //try with resouces - fecha a conexao ao final
         try ( PreparedStatement query = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             query.setDate(1, (Date) entity.getDataEmissao());
@@ -41,24 +43,34 @@ public class NotaFiscalDAO implements Dao<Integer, NotaFiscal> { // <o tipo de d
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        
-        //salvando os dados de itens nota
-        try ( PreparedStatement query = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            query.setDate(1, (Date) entity.getDataEmissao());
-            query.setInt(2, entity.getCliente().getId());
-            query.executeUpdate();
 
-            try ( ResultSet rs = query.getGeneratedKeys()) {
-                if (rs.next()) {  // Move o cursor para a primeira linha, pois pro padrao vem antes
-                    entity.setId(rs.getInt(1)); //coloca o id no produto            }
+        //salvando os dados de itens nota
+        List<ItemNota> itemnotas = entity.getListaItens();
+
+        for (ItemNota itemDaNota : itemnotas) {
+
+            sql = "INSERT INTO itemnota (quantidade, valorItem, produto_id, notaFiscal_id) values (?, ?, ?, ?);";
+            try ( PreparedStatement query = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                query.setInt(1, itemDaNota.getId());
+                query.setDouble(2, itemDaNota.getValorItem());
+                query.setInt(3, itemDaNota.getProduto().getId());
+                query.setInt(4, itemDaNota.getNotaFiscal().getId());
+
+                query.executeUpdate();
+
+                try ( ResultSet rs = query.getGeneratedKeys()) {
+                    if (rs.next()) {  // Move o cursor para a primeira linha, pois pro padrao vem antes
+                        itemDaNota.setId(rs.getInt(1)); //coloca o id no produto            }
+                    }
+
                 }
 
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
 
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
-        
+
     }
 
     @Override
@@ -78,8 +90,17 @@ public class NotaFiscalDAO implements Dao<Integer, NotaFiscal> { // <o tipo de d
                         notaFiscal.setId(rs.getInt("id"));
                         notaFiscal.setDataEmissao(rs.getDate("dataEmissao"));
 
-                        ClienteDAO dao = new ClienteDAO(ConnectionsFactory.createConnetionToMySQL());
-                        notaFiscal.setCliente(dao.retrive(rs.getInt("cliente_id")));
+                        try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
+                            ClienteDAO clienteDao = new ClienteDAO(ConnectionsFactory.createConnetionToMySQL());
+                            notaFiscal.setCliente(clienteDao.retrive(rs.getInt("cliente_id")));
+
+                            ItemNotaDAO itemNotaDao = new ItemNotaDAO(con);
+                            notaFiscal.setListaItens(itemNotaDao.findAllWithIDNota(pk));
+
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+
                     }
                 }
 
@@ -138,6 +159,19 @@ public class NotaFiscalDAO implements Dao<Integer, NotaFiscal> { // <o tipo de d
 
                     ClienteDAO dao = new ClienteDAO(ConnectionsFactory.createConnetionToMySQL());
                     notaFiscal.setCliente(dao.retrive(rs.getInt("cliente_id")));
+                    
+                    try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
+                            ClienteDAO clienteDao = new ClienteDAO(con);
+                            notaFiscal.setCliente(clienteDao.retrive(rs.getInt("cliente_id")));
+
+                            ItemNotaDAO itemNotaDao = new ItemNotaDAO(con);
+                            notaFiscal.setListaItens(itemNotaDao.findAllWithIDNota(rs.getInt("id")));
+
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+
+                   
 
                     notasFiscais.add(notaFiscal);
                 }
