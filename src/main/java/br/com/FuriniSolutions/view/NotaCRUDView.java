@@ -6,15 +6,22 @@ package br.com.FuriniSolutions.view;
 
 import br.com.FuriniSolutions.bean.Produto;
 import br.com.FuriniSolutions.dao.ProdutoDAO;
+import br.com.FuriniSolutions.model.ProdutoComboBoxModel;
 import br.com.FuriniSolutions.model.ProdutoTableModel;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 /**
  *
@@ -24,37 +31,63 @@ public class NotaCRUDView extends javax.swing.JFrame {
 
     public NotaCRUDView() {
         initComponents();
+        List<Produto> produtos = new ArrayList<>();
 
-        jtfDescricao.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                realizarBuscaProduto(evt);
+        //retornando todos os itens
+        try ( Connection connection = ConnectionsFactory.createConnetionToMySQL()) {
+            ProdutoDAO produtoDAO = new ProdutoDAO(connection);
+            produtos = produtoDAO.findAll();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro ao buscar produtos: " + e.getMessage());
+        }
+
+        ProdutoComboBoxModel comboBoxModel = new ProdutoComboBoxModel(produtos);
+        jcbDescricao.setModel(comboBoxModel);
+        jcbDescricao.setEditable(true);
+
+        JTextField textField = (JTextField) jcbDescricao.getEditor().getEditorComponent();
+        textField.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent e) {
+                String searchQuery = textField.getText();
+                if (searchQuery.length() > 2) { // Começa a buscar após 2 caracteres
+                    buscarProdutosNoBanco(searchQuery);
+                }
+            }
+        });
+
+        jcbDescricao.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Produto produtoSelecionado = (Produto) jcbDescricao.getSelectedItem();
+                if (produtoSelecionado != null) {
+                    preencherCamposProduto(produtoSelecionado);
+                }
             }
         });
 
     }
 
-    private void realizarBuscaProduto(java.awt.event.KeyEvent evt) {
-        String descricao = jtfDescricao.getText();
+    private void buscarProdutosNoBanco(String descricao) {
+        try ( Connection connection = ConnectionsFactory.createConnetionToMySQL()) {
+            ProdutoDAO produtoDAO = new ProdutoDAO(connection);
+            List<Produto> produtos = produtoDAO.buscarPorDescricao(descricao);
 
-        if (descricao.length() > 2) { // Começa a buscar após 2 caracteres
-            try ( Connection connection = ConnectionsFactory.createConnetionToMySQL()) {
-                ProdutoDAO produtoDAO = new ProdutoDAO(connection);
-                List<Produto> produtos = produtoDAO.buscarPorDescricao(descricao);
-
-                // Atualiza a tabela ou sugestão com os produtos encontrados
-                if (produtos != null && !produtos.isEmpty()) {
-                    atualizarTabelaProdutos(produtos);
-                }
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, "Erro ao buscar produtos: " + e.getMessage());
+            ProdutoComboBoxModel comboBoxModel = (ProdutoComboBoxModel) jcbDescricao.getModel();
+            comboBoxModel.setProdutos(produtos);  // Atualiza a lista de produtos no modelo
+            jcbDescricao.repaint();  
+            
+            if (produtos.size() > 0) {
+                jcbDescricao.showPopup(); // Mostra a lista de sugestões
             }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao buscar produtos: " + e.getMessage());
         }
     }
 
-    private void atualizarTabelaProdutos(List<Produto> produtos) {
-        ProdutoTableModel model = (ProdutoTableModel) tableProdutos.getModel();
-        model.setProdutos(produtos);
-        model.fireTableDataChanged();
+    private void preencherCamposProduto(Produto produto) {
+        jtfId.setText(String.valueOf(produto.getId()));
+        jtfValor.setText(String.valueOf(produto.getValor()));
+
     }
 
     /**
@@ -67,7 +100,6 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private void initComponents() {
 
         lblDescricao = new javax.swing.JLabel();
-        jtfDescricao = new javax.swing.JTextField();
         jtfValor = new javax.swing.JTextField();
         lblValor = new javax.swing.JLabel();
         btnSalvar = new javax.swing.JButton();
@@ -82,6 +114,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
         jtfQuantidade = new javax.swing.JTextField();
         lblValor2 = new javax.swing.JLabel();
         jtfTotal = new javax.swing.JTextField();
+        jcbDescricao = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Produto");
@@ -94,17 +127,6 @@ public class NotaCRUDView extends javax.swing.JFrame {
         });
 
         lblDescricao.setText("Descrição");
-
-        jtfDescricao.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jtfDescricaoActionPerformed(evt);
-            }
-        });
-        jtfDescricao.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                jtfDescricaoKeyReleased(evt);
-            }
-        });
 
         jtfValor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -174,6 +196,12 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
+        jcbDescricao.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jcbDescricaoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -190,11 +218,11 @@ public class NotaCRUDView extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(28, 28, 28)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(lblValor1)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jtfQuantidade)
+                                    .addComponent(jtfQuantidade, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
                                     .addGap(18, 18, 18)
                                     .addComponent(lblValor)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -210,12 +238,11 @@ public class NotaCRUDView extends javax.swing.JFrame {
                                     .addGap(18, 18, 18)
                                     .addComponent(lblDescricao)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jtfDescricao, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(jcbDescricao, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(btnAdicionar)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnCancelarProduto)))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                                .addComponent(btnCancelarProduto))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnSalvar)))
@@ -229,7 +256,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
                     .addComponent(jtfId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblID)
                     .addComponent(lblDescricao)
-                    .addComponent(jtfDescricao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jcbDescricao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblValor)
@@ -255,10 +282,6 @@ public class NotaCRUDView extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jtfDescricaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfDescricaoActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jtfDescricaoActionPerformed
-
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
 
@@ -275,7 +298,6 @@ public class NotaCRUDView extends javax.swing.JFrame {
 
     private void limparCampos() {
         jtfId.setText("");
-        jtfDescricao.setText("");
         jtfValor.setText("");
     }
 
@@ -299,9 +321,9 @@ public class NotaCRUDView extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jtfTotalActionPerformed
 
-    private void jtfDescricaoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfDescricaoKeyReleased
+    private void jcbDescricaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jcbDescricaoActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jtfDescricaoKeyReleased
+    }//GEN-LAST:event_jcbDescricaoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -359,7 +381,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private javax.swing.JButton btnSalvar;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jtfDescricao;
+    private javax.swing.JComboBox<Produto> jcbDescricao;
     private javax.swing.JTextField jtfId;
     private javax.swing.JTextField jtfQuantidade;
     private javax.swing.JTextField jtfTotal;
