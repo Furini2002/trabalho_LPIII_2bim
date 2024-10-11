@@ -18,6 +18,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
@@ -30,8 +32,9 @@ import javax.swing.JTextField;
  */
 public class NotaCRUDView extends javax.swing.JFrame {
 
-    List<Produto> produtos = new ArrayList<>();
-    Produto produtoSelecionado = new Produto();
+    private List<Produto> produtos = new ArrayList<>();
+    private Produto produtoSelecionado = new Produto();    
+    private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
 
     public NotaCRUDView() {
         initComponents();
@@ -92,11 +95,8 @@ public class NotaCRUDView extends javax.swing.JFrame {
             for (int i = 0; i < maxItems; i++) {
                 listModel.addElement(produtos.get(i).getDescricao());
             }
-            jltProdutos.setModel(listModel);      
+            jltProdutos.setModel(listModel);
 
-            
-
-            // Exibindo o JPopupMenu próximo ao JTextField
             menuProdutos.show(jtfDescricaoProduto, 0, jtfDescricaoProduto.getHeight());
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Erro ao buscar produtos: " + e.getMessage());
@@ -105,10 +105,16 @@ public class NotaCRUDView extends javax.swing.JFrame {
 
     private void preencherCamposProduto(Produto produto) {
         jtfIdProduto.setText(String.valueOf(produto.getId()));
-        jtfValor.setText(String.valueOf(produto.getValor()));
+        jtfValor.setText(String.valueOf(formatadorDecimal.format(produto.getValor())));
         jtfDescricaoProduto.setText(String.valueOf(produto.getDescricao()));
+        jtfTotal.setText(formatadorDecimal.format(produto.getValor()));
         jtfQuantidade.requestFocus();
 
+    }
+
+    private void limparCampos() {
+        jtfIdProduto.setText("");
+        jtfValor.setText("");
     }
 
     /**
@@ -238,6 +244,11 @@ public class NotaCRUDView extends javax.swing.JFrame {
         jtfQuantidade.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jtfQuantidadeActionPerformed(evt);
+            }
+        });
+        jtfQuantidade.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jtfQuantidadeKeyReleased(evt);
             }
         });
 
@@ -417,14 +428,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCancelarProdutoActionPerformed
 
     private void btnAdicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarActionPerformed
-
-
     }//GEN-LAST:event_btnAdicionarActionPerformed
-
-    private void limparCampos() {
-        jtfIdProduto.setText("");
-        jtfValor.setText("");
-    }
 
     private void jtfIdProdutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfIdProdutoActionPerformed
         // TODO add your handling code here:
@@ -453,6 +457,26 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private void jtfDescricaoProdutoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfDescricaoProdutoKeyReleased
 
     }//GEN-LAST:event_jtfDescricaoProdutoKeyReleased
+
+    private void jtfQuantidadeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfQuantidadeKeyReleased
+        try {            
+            if (!jtfQuantidade.getText().isEmpty() && !jtfValor.getText().isEmpty()) {
+                int quantidade = Integer.parseInt(jtfQuantidade.getText());
+
+                double valor = formatadorDecimal.parse(jtfValor.getText()).doubleValue();
+
+                // Calcula o total e formata o resultado
+                double total = quantidade * valor;
+                jtfTotal.setText(formatadorDecimal.format(total));
+            } else {
+                double valorUnitario = formatadorDecimal.parse(jtfValor.getText()).doubleValue();
+                jtfTotal.setText(formatadorDecimal.format(valorUnitario));
+            }
+        } catch (NumberFormatException | ParseException e) {            
+            jtfTotal.setText("");
+            System.out.println("Erro ao converter valores: " + e.getMessage());
+        }
+    }//GEN-LAST:event_jtfQuantidadeKeyReleased
 
     /**
      * @param args the command line arguments
