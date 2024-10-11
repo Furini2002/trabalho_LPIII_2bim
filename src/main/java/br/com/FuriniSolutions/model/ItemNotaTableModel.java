@@ -14,7 +14,7 @@ import javax.swing.table.AbstractTableModel;
 public class ItemNotaTableModel extends AbstractTableModel {
 
     private List<ItemNota> linhas = new ArrayList<>();
-    private String[] colunas = {"ID", "Descrição", "Quant.", "Valor (R$)", "Total"};
+    private String[] colunas = {"Descrição", "Quant.", "Valor (R$)", "Total"};
     private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
 
     @Override
@@ -30,17 +30,15 @@ public class ItemNotaTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int linha, int coluna) {
         ItemNota item = linhas.get(linha);
-        return switch (coluna) {
+        return switch (coluna) {            
             case 0 ->
-                item.getId();
-            case 1 ->
                 item.getProduto().getDescricao();
-            case 2 ->
+            case 1 ->
                 item.getQuantidade();
+            case 2 ->
+                formatadorDecimal.format(item.getValorItem());
             case 3 ->
-                item.getValorItem();
-            case 4 ->
-                (item.getQuantidade() * item.getValorItem());
+                formatadorDecimal.format((item.getQuantidade() * item.getValorItem()));
             default ->
                 throw new IllegalArgumentException("Coluna inválida: " + coluna);
         };
@@ -66,14 +64,12 @@ public class ItemNotaTableModel extends AbstractTableModel {
         this.fireTableRowsInserted(rowIndex, rowIndex);
     }
 
-    //adiciona uma lista de categorias na lista desta classe
     public void addList(List<ItemNota> itens) {
         this.linhas.clear();
         this.linhas.addAll(itens);
         this.fireTableDataChanged();
     }
 
-    //deleta uma categoria da lista da tabela
     public void delete(ItemNota item) {
         int rowIndex = linhas.indexOf(item);
         this.linhas.remove(item);
