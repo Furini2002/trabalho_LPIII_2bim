@@ -6,14 +6,14 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProdutoSearchJListDemo extends JFrame {
+public class ProdutoSearchWithPopupMenu extends JFrame {
 
     private JTextField searchField;
     private JList<String> resultList;
     private DefaultListModel<String> listModel;
     private List<String> produtos;
 
-    public ProdutoSearchJListDemo() {
+    public ProdutoSearchWithPopupMenu() {
         initComponents();
     }
 
@@ -105,7 +105,7 @@ public class ProdutoSearchJListDemo extends JFrame {
         // Executa a interface gráfica na thread principal
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new ProdutoSearchJListDemo(); // Inicia a aplicação
+                new ProdutoSearchWithPopupMenu(); // Inicia a aplicação
             }
         });
     }

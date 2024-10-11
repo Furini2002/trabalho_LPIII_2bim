@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
@@ -30,6 +31,7 @@ import javax.swing.JTextField;
 public class NotaCRUDView extends javax.swing.JFrame {
 
     List<Produto> produtos = new ArrayList<>();
+    Produto produtoSelecionado = new Produto();
 
     public NotaCRUDView() {
         initComponents();
@@ -47,81 +49,66 @@ public class NotaCRUDView extends javax.swing.JFrame {
         jtfTotal.setForeground(Color.DARK_GRAY);
         jtfTotal.setEditable(false);
 
-        jcbDescricao.requestFocus();
+        menuProdutos.add(panelPesquisaProdutos);
 
-        // Carregar todos os produtos do banco de dados
+        // Adicionar o listener para o campo de descrição
+        jtfDescricao.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent evt) {
+                buscarProdutos(jtfDescricao.getText().trim());  // Chama a função de busca
+            }
+        });
+
+        // Adicionar mouse listener para selecionar o item na lista
+        jltProdutos.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getClickCount() == 2) {  // Seleção com duplo clique
+                    produtoSelecionado = produtos.get(jltProdutos.getSelectedIndex());
+                    preencherCamposProduto(produtoSelecionado);  // Preenche os campos com o produto selecionado
+                    menuProdutos.setVisible(false);  // Esconde o menu após a seleção
+                }
+            }
+        });
+
+    }
+
+    private void buscarProdutos(String search) {
         try ( Connection connection = ConnectionsFactory.createConnetionToMySQL()) {
             ProdutoDAO produtoDAO = new ProdutoDAO(connection);
-            produtos = produtoDAO.findAll();  // Carregar todos os produtos inicialmente
-        } catch (Exception e) {
+
+            // Se o campo de busca estiver vazio, busca todos os produtos
+            if (search.trim().isEmpty()) {
+                produtos = produtoDAO.findAll();  // Busca todos os produtos
+            } else {
+                produtos = produtoDAO.buscarPorDescricao(search);  // Filtra pela descrição
+            }
+
+            // Limitar a exibição de no máximo 5 itens
+            int maxItems = Math.min(produtos.size(), 5);
+
+            // Atualizando o JList com os produtos encontrados
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            for (int i = 0; i < maxItems; i++) {
+                listModel.addElement(produtos.get(i).getDescricao());
+            }
+            jltProdutos.setModel(listModel);      
+
+            
+
+            // Exibindo o JPopupMenu próximo ao JTextField
+            menuProdutos.show(jtfDescricao, 0, jtfDescricao.getHeight());
+        } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Erro ao buscar produtos: " + e.getMessage());
         }
-
-        // Configurando o ComboBox com todos os produtos
-        ProdutoComboBoxModel comboBoxModel = new ProdutoComboBoxModel(produtos);
-        jcbDescricao.setModel(comboBoxModel);
-        jcbDescricao.setEditable(true);
-        jcbDescricao.setSelectedItem(null);  // Iniciar sem seleção
-
-        // Capturar a entrada no campo de texto do ComboBox
-        JTextField textField = (JTextField) jcbDescricao.getEditor().getEditorComponent();
-
-        textField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                String searchQuery = textField.getText();
-                if (searchQuery.length() >= 4) {
-                    filtrarProdutos(searchQuery);  // Filtrar os produtos conforme a entrada
-                } else {
-                    // Restaurar a lista completa se o campo de pesquisa estiver vazio
-                    comboBoxModel.setProdutos(produtos);
-                    jcbDescricao.setSelectedItem(null);
-                }
-
-                // Evitar que o ComboBox selecione automaticamente o primeiro item
-                if (e.getKeyCode() != KeyEvent.VK_ENTER) {
-                    jcbDescricao.setSelectedItem(null);
-                }
-            }
-        });
-
-        // Preencher campos ao selecionar um produto (somente quando o Enter é pressionado ou o item é clicado)
-        jcbDescricao.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                if (evt.getModifiers() == 0) {  // Ignorar eventos de seleção automática
-                    Produto produtoSelecionado = (Produto) jcbDescricao.getSelectedItem();
-                    if (produtoSelecionado != null) {
-                        preencherCamposProduto(produtoSelecionado);
-                    }
-                }
-            }
-        });
     }
 
-    // Método para filtrar produtos com base na entrada de texto
-    private void filtrarProdutos(String query) {
-        List<Produto> produtosFiltrados = new ArrayList<>();
-        for (Produto produto : produtos) {
-            if (produto.getDescricao().toLowerCase().contains(query.toLowerCase())) {
-                produtosFiltrados.add(produto);
-            }
-        }
-
-        // Atualizar o modelo do ComboBox com os produtos filtrados
-        ProdutoComboBoxModel comboBoxModel = (ProdutoComboBoxModel) jcbDescricao.getModel();
-        comboBoxModel.setProdutos(produtosFiltrados);
-
-        // Limpar a seleção e mostrar o popup com os resultados filtrados
-        jcbDescricao.setSelectedItem(null);
-        if (!produtosFiltrados.isEmpty()) {
-            jcbDescricao.showPopup();  // Mostrar sugestões filtradas
-        }
-    }
-
-    // Método para preencher os campos de texto com base no produto selecionado
     private void preencherCamposProduto(Produto produto) {
         jtfId.setText(String.valueOf(produto.getId()));
         jtfValor.setText(String.valueOf(produto.getValor()));
+        jtfDescricao.setText(String.valueOf(produto.getDescricao()));
+        jtfQuantidade.requestFocus();
+
     }
 
     /**
@@ -133,22 +120,49 @@ public class NotaCRUDView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblDescricao = new javax.swing.JLabel();
-        jtfValor = new javax.swing.JTextField();
-        lblValor = new javax.swing.JLabel();
+        menuProdutos = new javax.swing.JPopupMenu();
+        panelPesquisaProdutos = new javax.swing.JPanel();
+        jspProdutos = new javax.swing.JScrollPane();
+        jltProdutos = new javax.swing.JList<>();
         btnSalvar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tableProdutos = new javax.swing.JTable();
+        jLabel3 = new javax.swing.JLabel();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
         btnCancelarProduto = new javax.swing.JButton();
         btnAdicionar = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
         jtfId = new javax.swing.JTextField();
         lblID = new javax.swing.JLabel();
+        lblDescricao = new javax.swing.JLabel();
         lblValor1 = new javax.swing.JLabel();
+        jtfValor = new javax.swing.JTextField();
         jtfQuantidade = new javax.swing.JTextField();
+        lblValor = new javax.swing.JLabel();
         lblValor2 = new javax.swing.JLabel();
         jtfTotal = new javax.swing.JTextField();
-        jcbDescricao = new javax.swing.JComboBox<>();
+        jtfDescricao = new javax.swing.JTextField();
+
+        menuProdutos.setBorder(null);
+        menuProdutos.setFocusable(false);
+
+        jspProdutos.setBorder(null);
+
+        jspProdutos.setViewportView(jltProdutos);
+
+        javax.swing.GroupLayout panelPesquisaProdutosLayout = new javax.swing.GroupLayout(panelPesquisaProdutos);
+        panelPesquisaProdutos.setLayout(panelPesquisaProdutosLayout);
+        panelPesquisaProdutosLayout.setHorizontalGroup(
+            panelPesquisaProdutosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 327, Short.MAX_VALUE)
+            .addGroup(panelPesquisaProdutosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jspProdutos, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE))
+        );
+        panelPesquisaProdutosLayout.setVerticalGroup(
+            panelPesquisaProdutosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 93, Short.MAX_VALUE)
+            .addGroup(panelPesquisaProdutosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jspProdutos, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE))
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Produto");
@@ -159,16 +173,6 @@ public class NotaCRUDView extends javax.swing.JFrame {
                 formMouseClicked(evt);
             }
         });
-
-        lblDescricao.setText("Descrição");
-
-        jtfValor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jtfValorActionPerformed(evt);
-            }
-        });
-
-        lblValor.setText("Valor (R$)");
 
         btnSalvar.setText("Salvar nota");
         btnSalvar.addActionListener(new java.awt.event.ActionListener() {
@@ -190,6 +194,10 @@ public class NotaCRUDView extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(tableProdutos);
 
+        jLabel3.setText("Lista de itens da nota");
+
+        jLayeredPane1.setBorder(javax.swing.BorderFactory.createTitledBorder("Produto"));
+
         btnCancelarProduto.setLabel("Cancelar");
         btnCancelarProduto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -204,8 +212,6 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
-        jLabel3.setText("Lista de itens da nota");
-
         jtfId.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jtfIdActionPerformed(evt);
@@ -214,13 +220,23 @@ public class NotaCRUDView extends javax.swing.JFrame {
 
         lblID.setText("ID");
 
+        lblDescricao.setText("Descrição");
+
         lblValor1.setText("Quantidade");
+
+        jtfValor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jtfValorActionPerformed(evt);
+            }
+        });
 
         jtfQuantidade.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jtfQuantidadeActionPerformed(evt);
             }
         });
+
+        lblValor.setText("Valor (R$)");
 
         lblValor2.setText("Total (R$)");
 
@@ -230,69 +246,74 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
-        jcbDescricao.addActionListener(new java.awt.event.ActionListener() {
+        jtfDescricao.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jcbDescricaoActionPerformed(evt);
+                jtfDescricaoActionPerformed(evt);
+            }
+        });
+        jtfDescricao.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jtfDescricaoKeyReleased(evt);
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(jScrollPane1)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(28, 28, 28)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(lblValor1)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jtfQuantidade, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(lblValor)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jtfValor, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(lblValor2)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jtfTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(lblID)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jtfId, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(lblDescricao)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jcbDescricao, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnAdicionar)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnCancelarProduto))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnSalvar)))
+        jLayeredPane1.setLayer(btnCancelarProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(btnAdicionar, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(jtfId, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(lblID, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(lblDescricao, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(lblValor1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(jtfValor, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(jtfQuantidade, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(lblValor, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(lblValor2, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(jtfTotal, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayeredPane1.setLayer(jtfDescricao, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout jLayeredPane1Layout = new javax.swing.GroupLayout(jLayeredPane1);
+        jLayeredPane1.setLayout(jLayeredPane1Layout);
+        jLayeredPane1Layout.setHorizontalGroup(
+            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jLayeredPane1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayeredPane1Layout.createSequentialGroup()
+                        .addComponent(lblValor1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jtfQuantidade, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(lblValor)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jtfValor, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(lblValor2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jtfTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jLayeredPane1Layout.createSequentialGroup()
+                        .addComponent(lblID)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jtfId, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(lblDescricao)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jtfDescricao))
+                    .addGroup(jLayeredPane1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnAdicionar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnCancelarProduto)))
                 .addContainerGap())
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        jLayeredPane1Layout.setVerticalGroup(
+            jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jLayeredPane1Layout.createSequentialGroup()
+                .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jtfId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblID)
                     .addComponent(lblDescricao)
-                    .addComponent(jcbDescricao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jtfDescricao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblValor)
                     .addComponent(jtfValor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblValor2)
@@ -300,10 +321,35 @@ public class NotaCRUDView extends javax.swing.JFrame {
                     .addComponent(lblValor1)
                     .addComponent(jtfQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jLayeredPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAdicionar)
                     .addComponent(btnCancelarProduto))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addGap(167, 167, 167))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnSalvar))
+                    .addComponent(jLayeredPane1))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(137, Short.MAX_VALUE)
+                .addComponent(jLayeredPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -355,9 +401,13 @@ public class NotaCRUDView extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jtfTotalActionPerformed
 
-    private void jcbDescricaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jcbDescricaoActionPerformed
+    private void jtfDescricaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfDescricaoActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jcbDescricaoActionPerformed
+    }//GEN-LAST:event_jtfDescricaoActionPerformed
+
+    private void jtfDescricaoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfDescricaoKeyReleased
+
+    }//GEN-LAST:event_jtfDescricaoKeyReleased
 
     /**
      * @param args the command line arguments
@@ -414,8 +464,11 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private javax.swing.JButton btnCancelarProduto;
     private javax.swing.JButton btnSalvar;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JComboBox<Produto> jcbDescricao;
+    private javax.swing.JList<String> jltProdutos;
+    private javax.swing.JScrollPane jspProdutos;
+    private javax.swing.JTextField jtfDescricao;
     private javax.swing.JTextField jtfId;
     private javax.swing.JTextField jtfQuantidade;
     private javax.swing.JTextField jtfTotal;
@@ -425,6 +478,8 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private javax.swing.JLabel lblValor;
     private javax.swing.JLabel lblValor1;
     private javax.swing.JLabel lblValor2;
+    private javax.swing.JPopupMenu menuProdutos;
+    private javax.swing.JPanel panelPesquisaProdutos;
     private javax.swing.JTable tableProdutos;
     // End of variables declaration//GEN-END:variables
 }
