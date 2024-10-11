@@ -33,7 +33,7 @@ import javax.swing.JTextField;
 public class NotaCRUDView extends javax.swing.JFrame {
 
     private List<Produto> produtos = new ArrayList<>();
-    private Produto produtoSelecionado = new Produto();    
+    private Produto produtoSelecionado = new Produto();
     private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
 
     public NotaCRUDView() {
@@ -262,6 +262,11 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
+        jtfDescricaoProduto.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jtfDescricaoProdutoMouseClicked(evt);
+            }
+        });
         jtfDescricaoProduto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jtfDescricaoProdutoActionPerformed(evt);
@@ -459,7 +464,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_jtfDescricaoProdutoKeyReleased
 
     private void jtfQuantidadeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfQuantidadeKeyReleased
-        try {            
+        try {
             if (!jtfQuantidade.getText().isEmpty() && !jtfValor.getText().isEmpty()) {
                 int quantidade = Integer.parseInt(jtfQuantidade.getText());
 
@@ -472,11 +477,17 @@ public class NotaCRUDView extends javax.swing.JFrame {
                 double valorUnitario = formatadorDecimal.parse(jtfValor.getText()).doubleValue();
                 jtfTotal.setText(formatadorDecimal.format(valorUnitario));
             }
-        } catch (NumberFormatException | ParseException e) {            
+        } catch (NumberFormatException | ParseException e) {
             jtfTotal.setText("");
             System.out.println("Erro ao converter valores: " + e.getMessage());
         }
     }//GEN-LAST:event_jtfQuantidadeKeyReleased
+
+    private void jtfDescricaoProdutoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jtfDescricaoProdutoMouseClicked
+        if (evt.getClickCount() == 2) {  // Seleção com duplo clique
+            buscarProdutos(jtfDescricaoProduto.getText().trim());
+        }
+    }//GEN-LAST:event_jtfDescricaoProdutoMouseClicked
 
     /**
      * @param args the command line arguments
