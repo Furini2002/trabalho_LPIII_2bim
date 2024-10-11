@@ -3,6 +3,7 @@ br\com\FuriniSolutions\dao\Dao.class
 br\com\FuriniSolutions\view\ProdutoCRUDView$9.class
 br\com\FuriniSolutions\view\NotaCRUDView$5.class
 br\com\FuriniSolutions\dao\ClienteDAO.class
+ProdutoSearchJListDemo$3.class
 br\com\FuriniSolutions\view\ClienteCRUDView$5.class
 br\com\FuriniSolutions\view\ClienteCRUDView$9.class
 br\com\FuriniSolutions\view\NotaCRUDView$8.class
@@ -10,10 +11,12 @@ br\com\FuriniSolutions\view\ProdutoCRUDView$3.class
 br\com\FuriniSolutions\view\ProdutoCRUDView$6.class
 br\com\FuriniSolutions\view\ClienteCRUDView$2.class
 br\com\FuriniSolutions\view\ClienteCRUDView$6.class
+ProdutoSearchJListDemo$2.class
 br\com\FuriniSolutions\dao\ProdutoDAO.class
 br\com\FuriniSolutions\util\DataUtil.class
 br\com\FuriniSolutions\view\NotaCRUDView$1.class
 br\com\FuriniSolutions\view\ClienteCRUDView$3.class
+ProdutoSearchJListDemo.class
 br\com\FuriniSolutions\view\ProdutoCRUDView$7.class
 br\com\FuriniSolutions\view\NotaCRUDView$10.class
 br\com\FuriniSolutions\view\NotaCRUDView$4.class
@@ -21,6 +24,8 @@ br\com\FuriniSolutions\view\NotaCRUDView$7.class
 br\com\FuriniSolutions\model\ProdutoComboBoxModel.class
 br\com\FuriniSolutions\view\ClienteCRUDView.class
 br\com\FuriniSolutions\bean\ItemNota.class
+ProdutoSearchJListDemo$Produto.class
+ProdutoSearchJListDemo$1.class
 br\com\FuriniSolutions\bean\NotaFiscal.class
 br\com\FuriniSolutions\view\ProdutoCRUDView$10.class
 br\com\FuriniSolutions\view\ProdutoCRUDView$OperationType.class

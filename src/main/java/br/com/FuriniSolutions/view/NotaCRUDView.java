@@ -29,65 +29,99 @@ import javax.swing.JTextField;
  */
 public class NotaCRUDView extends javax.swing.JFrame {
 
+    List<Produto> produtos = new ArrayList<>();
+
     public NotaCRUDView() {
         initComponents();
-        List<Produto> produtos = new ArrayList<>();
 
-        //retornando todos os itens
+        // Campos não editáveis
+        jtfId.setBackground(Color.LIGHT_GRAY);
+        jtfId.setForeground(Color.DARK_GRAY);
+        jtfId.setEditable(false);
+
+        jtfValor.setBackground(Color.LIGHT_GRAY);
+        jtfValor.setForeground(Color.DARK_GRAY);
+        jtfValor.setEditable(false);
+
+        jtfTotal.setBackground(Color.LIGHT_GRAY);
+        jtfTotal.setForeground(Color.DARK_GRAY);
+        jtfTotal.setEditable(false);
+
+        jcbDescricao.requestFocus();
+
+        // Carregar todos os produtos do banco de dados
         try ( Connection connection = ConnectionsFactory.createConnetionToMySQL()) {
             ProdutoDAO produtoDAO = new ProdutoDAO(connection);
-            produtos = produtoDAO.findAll();
-
+            produtos = produtoDAO.findAll();  // Carregar todos os produtos inicialmente
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao buscar produtos: " + e.getMessage());
         }
 
+        // Configurando o ComboBox com todos os produtos
         ProdutoComboBoxModel comboBoxModel = new ProdutoComboBoxModel(produtos);
         jcbDescricao.setModel(comboBoxModel);
         jcbDescricao.setEditable(true);
+        jcbDescricao.setSelectedItem(null);  // Iniciar sem seleção
 
+        // Capturar a entrada no campo de texto do ComboBox
         JTextField textField = (JTextField) jcbDescricao.getEditor().getEditorComponent();
+
         textField.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyReleased(KeyEvent e) {
                 String searchQuery = textField.getText();
-                if (searchQuery.length() > 2) { // Começa a buscar após 2 caracteres
-                    buscarProdutosNoBanco(searchQuery);
+                if (searchQuery.length() >= 4) {
+                    filtrarProdutos(searchQuery);  // Filtrar os produtos conforme a entrada
+                } else {
+                    // Restaurar a lista completa se o campo de pesquisa estiver vazio
+                    comboBoxModel.setProdutos(produtos);
+                    jcbDescricao.setSelectedItem(null);
+                }
+
+                // Evitar que o ComboBox selecione automaticamente o primeiro item
+                if (e.getKeyCode() != KeyEvent.VK_ENTER) {
+                    jcbDescricao.setSelectedItem(null);
                 }
             }
         });
 
+        // Preencher campos ao selecionar um produto (somente quando o Enter é pressionado ou o item é clicado)
         jcbDescricao.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Produto produtoSelecionado = (Produto) jcbDescricao.getSelectedItem();
-                if (produtoSelecionado != null) {
-                    preencherCamposProduto(produtoSelecionado);
+                if (evt.getModifiers() == 0) {  // Ignorar eventos de seleção automática
+                    Produto produtoSelecionado = (Produto) jcbDescricao.getSelectedItem();
+                    if (produtoSelecionado != null) {
+                        preencherCamposProduto(produtoSelecionado);
+                    }
                 }
             }
         });
-
     }
 
-    private void buscarProdutosNoBanco(String descricao) {
-        try ( Connection connection = ConnectionsFactory.createConnetionToMySQL()) {
-            ProdutoDAO produtoDAO = new ProdutoDAO(connection);
-            List<Produto> produtos = produtoDAO.buscarPorDescricao(descricao);
-
-            ProdutoComboBoxModel comboBoxModel = (ProdutoComboBoxModel) jcbDescricao.getModel();
-            comboBoxModel.setProdutos(produtos);  // Atualiza a lista de produtos no modelo
-            jcbDescricao.repaint();  
-            
-            if (produtos.size() > 0) {
-                jcbDescricao.showPopup(); // Mostra a lista de sugestões
+    // Método para filtrar produtos com base na entrada de texto
+    private void filtrarProdutos(String query) {
+        List<Produto> produtosFiltrados = new ArrayList<>();
+        for (Produto produto : produtos) {
+            if (produto.getDescricao().toLowerCase().contains(query.toLowerCase())) {
+                produtosFiltrados.add(produto);
             }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao buscar produtos: " + e.getMessage());
+        }
+
+        // Atualizar o modelo do ComboBox com os produtos filtrados
+        ProdutoComboBoxModel comboBoxModel = (ProdutoComboBoxModel) jcbDescricao.getModel();
+        comboBoxModel.setProdutos(produtosFiltrados);
+
+        // Limpar a seleção e mostrar o popup com os resultados filtrados
+        jcbDescricao.setSelectedItem(null);
+        if (!produtosFiltrados.isEmpty()) {
+            jcbDescricao.showPopup();  // Mostrar sugestões filtradas
         }
     }
 
+    // Método para preencher os campos de texto com base no produto selecionado
     private void preencherCamposProduto(Produto produto) {
         jtfId.setText(String.valueOf(produto.getId()));
         jtfValor.setText(String.valueOf(produto.getValor()));
-
     }
 
     /**
