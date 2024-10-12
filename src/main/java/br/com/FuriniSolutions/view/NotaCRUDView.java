@@ -4,8 +4,10 @@
  */
 package br.com.FuriniSolutions.view;
 
+import br.com.FuriniSolutions.bean.Cliente;
 import br.com.FuriniSolutions.bean.ItemNota;
 import br.com.FuriniSolutions.bean.Produto;
+import br.com.FuriniSolutions.dao.ClienteDAO;
 import br.com.FuriniSolutions.dao.ProdutoDAO;
 import br.com.FuriniSolutions.model.ItemNotaTableModel;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
@@ -29,7 +31,9 @@ import javax.swing.JOptionPane;
 public class NotaCRUDView extends javax.swing.JFrame {
 
     private List<Produto> produtos = new ArrayList<>();
+    private List<Cliente> clientes = new ArrayList<>();
     private Produto produtoSelecionado = new Produto();
+    private Cliente clienteSelecionado = new Cliente();
     private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
 
     public NotaCRUDView() {
@@ -49,15 +53,18 @@ public class NotaCRUDView extends javax.swing.JFrame {
         jtfTotal.setBackground(Color.LIGHT_GRAY);
         jtfTotal.setForeground(Color.DARK_GRAY);
         jtfTotal.setEditable(false);
-        
+
         jtfIDCliente.setBackground(Color.LIGHT_GRAY);
         jtfIDCliente.setForeground(Color.DARK_GRAY);
-        jtfIDCliente.setEditable(false);       
+        jtfIDCliente.setEditable(false);
 
-        //adicionando a lista do produto ao panel
+        jtfINomeCliente.requestFocus();
+
+        //adicionando a lista ao panel
         menuProdutos.add(panelPesquisaProdutos);
+        menuClientes.add(panelPesquisaClientes);
 
-        // Adicionar o listener para o campo de descrição
+        // Adicionar o listener para o campo de descrição do produto
         jtfDescricaoProduto.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent evt) {
@@ -65,7 +72,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
-        // Adicionar mouse listener para selecionar o item na lista
+        // Adicionar mouse listener para selecionar o item na lista do produto
         jltProdutos.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -77,7 +84,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
-        //adicionando listener na quantidade para permitir apenas numeros
+        //adicionando listener na quantidade do produto para permitir apenas numeros
         jtfQuantidade.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent evt) {
@@ -86,6 +93,25 @@ public class NotaCRUDView extends javax.swing.JFrame {
                 if (!Character.isDigit(c) && c != KeyEvent.VK_BACK_SPACE && c != KeyEvent.VK_DELETE) {
                     evt.consume(); // Ignora o evento de tecla se não for número ou backspace/delete
                 }
+            }
+        });
+
+        // Adicionar mouse listener para selecionar o item na lista do cliente
+        jltClientes.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getClickCount() == 2) {  // Seleção com duplo clique
+                    clienteSelecionado = clientes.get(jltClientes.getSelectedIndex());
+                    preencherCamposCliente(clienteSelecionado);  // Preenche os campos com o produto selecionado
+                    menuClientes.setVisible(false);  // Esconde o menu após a seleção
+                }
+            }
+        });
+
+        jtfINomeCliente.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent evt) {
+                buscarClientes(jtfINomeCliente.getText().trim());  // Chama a função de busca
             }
         });
 
@@ -127,7 +153,42 @@ public class NotaCRUDView extends javax.swing.JFrame {
 
     }
 
-    private void limparCampos() {
+    private void buscarClientes(String search) {
+        try ( Connection connection = ConnectionsFactory.createConnetionToMySQL()) {
+            ClienteDAO clienteDAO = new ClienteDAO(connection);
+
+            // Se a pesquisa estiver vazia, busca todos os clientes
+            if (search.trim().isEmpty()) {
+                clientes = clienteDAO.findAll();  // Busca todos os clientes
+            } else {
+                clientes = clienteDAO.buscarPorDescricao(search);  // Filtra os clientes pela descrição
+            }
+
+            // Limitar a exibição de no máximo 5 itens
+            int maxItems = Math.min(clientes.size(), 5);
+
+            // Atualizando o JList com os clientes encontrados
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            for (int i = 0; i < maxItems; i++) {
+                listModel.addElement(clientes.get(i).getNome());
+            }
+            jltClientes.setModel(listModel);
+
+            // Exibir o menu popup
+            menuClientes.show(jtfINomeCliente, 0, jtfINomeCliente.getHeight());
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao buscar clientes: " + e.getMessage());
+        }
+    }
+
+    private void preencherCamposCliente(Cliente cliente) {
+        jtfIDCliente.setText(String.valueOf(cliente.getId()));
+        jtfINomeCliente.setText(cliente.getNome());
+        jtfDescricaoProduto.requestFocus();
+
+    }
+
+    private void limparCamposProduto() {
         jtfIdProduto.setText("");
         jtfDescricaoProduto.setText("");
         jtfQuantidade.setText("");
@@ -148,7 +209,11 @@ public class NotaCRUDView extends javax.swing.JFrame {
         panelPesquisaProdutos = new javax.swing.JPanel();
         jspProdutos = new javax.swing.JScrollPane();
         jltProdutos = new javax.swing.JList<>();
-        jLayerCliente = new javax.swing.JLayeredPane();
+        panelPesquisaClientes = new javax.swing.JPanel();
+        jspClientes = new javax.swing.JScrollPane();
+        jltClientes = new javax.swing.JList<>();
+        menuClientes = new javax.swing.JPopupMenu();
+        jLayerProduto = new javax.swing.JLayeredPane();
         btnCancelarProduto = new javax.swing.JButton();
         btnAdicionar = new javax.swing.JButton();
         jtfIdProduto = new javax.swing.JTextField();
@@ -161,7 +226,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
         lblTotal = new javax.swing.JLabel();
         jtfTotal = new javax.swing.JTextField();
         jtfDescricaoProduto = new javax.swing.JTextField();
-        jLayerProduto = new javax.swing.JLayeredPane();
+        jLayerCliente = new javax.swing.JLayeredPane();
         jLabel1 = new javax.swing.JLabel();
         jtfIDCliente = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
@@ -176,6 +241,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
         menuProdutos.setFocusable(false);
 
         jspProdutos.setBorder(null);
+        jspProdutos.setAutoscrolls(true);
 
         jspProdutos.setViewportView(jltProdutos);
 
@@ -194,8 +260,31 @@ public class NotaCRUDView extends javax.swing.JFrame {
                 .addComponent(jspProdutos, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE))
         );
 
+        panelPesquisaClientes.setFocusable(false);
+
+        jspClientes.setFocusable(false);
+
+        jspClientes.setViewportView(jltClientes);
+
+        javax.swing.GroupLayout panelPesquisaClientesLayout = new javax.swing.GroupLayout(panelPesquisaClientes);
+        panelPesquisaClientes.setLayout(panelPesquisaClientesLayout);
+        panelPesquisaClientesLayout.setHorizontalGroup(
+            panelPesquisaClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 269, Short.MAX_VALUE)
+            .addGroup(panelPesquisaClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jspClientes, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
+        );
+        panelPesquisaClientesLayout.setVerticalGroup(
+            panelPesquisaClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 96, Short.MAX_VALUE)
+            .addGroup(panelPesquisaClientesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jspClientes, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE))
+        );
+
+        menuClientes.setFocusable(false);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Produto");
+        setTitle("Cadastrando nota fiscal");
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         setFocusTraversalPolicyProvider(true);
         addMouseListener(new java.awt.event.MouseAdapter() {
@@ -204,7 +293,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
-        jLayerCliente.setBorder(javax.swing.BorderFactory.createTitledBorder("Produto"));
+        jLayerProduto.setBorder(javax.swing.BorderFactory.createTitledBorder("Produto"));
 
         btnCancelarProduto.setLabel("Cancelar");
         btnCancelarProduto.addActionListener(new java.awt.event.ActionListener() {
@@ -275,27 +364,27 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
-        jLayerCliente.setLayer(btnCancelarProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(btnAdicionar, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(jtfIdProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(lblID, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(lblDescricao, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(lblValor1, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(jtfValor, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(jtfQuantidade, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(lblValor, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(lblTotal, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(jtfTotal, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerCliente.setLayer(jtfDescricaoProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(btnCancelarProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(btnAdicionar, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(jtfIdProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(lblID, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(lblDescricao, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(lblValor1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(jtfValor, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(jtfQuantidade, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(lblValor, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(lblTotal, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(jtfTotal, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(jtfDescricaoProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
-        javax.swing.GroupLayout jLayerClienteLayout = new javax.swing.GroupLayout(jLayerCliente);
-        jLayerCliente.setLayout(jLayerClienteLayout);
-        jLayerClienteLayout.setHorizontalGroup(
-            jLayerClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jLayerClienteLayout.createSequentialGroup()
+        javax.swing.GroupLayout jLayerProdutoLayout = new javax.swing.GroupLayout(jLayerProduto);
+        jLayerProduto.setLayout(jLayerProdutoLayout);
+        jLayerProdutoLayout.setHorizontalGroup(
+            jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jLayerProdutoLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jLayerClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayerClienteLayout.createSequentialGroup()
+                .addGroup(jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayerProdutoLayout.createSequentialGroup()
                         .addComponent(lblValor1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jtfQuantidade, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
@@ -307,7 +396,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
                         .addComponent(lblTotal)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jtfTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jLayerClienteLayout.createSequentialGroup()
+                    .addGroup(jLayerProdutoLayout.createSequentialGroup()
                         .addComponent(lblID)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jtfIdProduto, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -315,23 +404,23 @@ public class NotaCRUDView extends javax.swing.JFrame {
                         .addComponent(lblDescricao)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jtfDescricaoProduto))
-                    .addGroup(jLayerClienteLayout.createSequentialGroup()
+                    .addGroup(jLayerProdutoLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btnAdicionar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnCancelarProduto)))
                 .addContainerGap())
         );
-        jLayerClienteLayout.setVerticalGroup(
-            jLayerClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jLayerClienteLayout.createSequentialGroup()
-                .addGroup(jLayerClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        jLayerProdutoLayout.setVerticalGroup(
+            jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jLayerProdutoLayout.createSequentialGroup()
+                .addGroup(jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jtfIdProduto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblID)
                     .addComponent(lblDescricao)
                     .addComponent(jtfDescricaoProduto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jLayerClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblValor)
                     .addComponent(jtfValor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblTotal)
@@ -339,28 +428,39 @@ public class NotaCRUDView extends javax.swing.JFrame {
                     .addComponent(lblValor1)
                     .addComponent(jtfQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jLayerClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAdicionar)
                     .addComponent(btnCancelarProduto))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLayerProduto.setBorder(javax.swing.BorderFactory.createTitledBorder("Cliente"));
+        jLayerCliente.setBorder(javax.swing.BorderFactory.createTitledBorder("Cliente"));
 
         jLabel1.setText("ID");
 
         jLabel2.setText("Nome");
 
-        jLayerProduto.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerProduto.setLayer(jtfIDCliente, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerProduto.setLayer(jLabel2, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerProduto.setLayer(jtfINomeCliente, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jtfINomeCliente.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jtfINomeClienteMouseClicked(evt);
+            }
+        });
+        jtfINomeCliente.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jtfINomeClienteKeyReleased(evt);
+            }
+        });
 
-        javax.swing.GroupLayout jLayerProdutoLayout = new javax.swing.GroupLayout(jLayerProduto);
-        jLayerProduto.setLayout(jLayerProdutoLayout);
-        jLayerProdutoLayout.setHorizontalGroup(
-            jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jLayerProdutoLayout.createSequentialGroup()
+        jLayerCliente.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerCliente.setLayer(jtfIDCliente, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerCliente.setLayer(jLabel2, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerCliente.setLayer(jtfINomeCliente, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout jLayerClienteLayout = new javax.swing.GroupLayout(jLayerCliente);
+        jLayerCliente.setLayout(jLayerClienteLayout);
+        jLayerClienteLayout.setHorizontalGroup(
+            jLayerClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jLayerClienteLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -371,10 +471,10 @@ public class NotaCRUDView extends javax.swing.JFrame {
                 .addComponent(jtfINomeCliente)
                 .addContainerGap())
         );
-        jLayerProdutoLayout.setVerticalGroup(
-            jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jLayerProdutoLayout.createSequentialGroup()
-                .addGroup(jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        jLayerClienteLayout.setVerticalGroup(
+            jLayerClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jLayerClienteLayout.createSequentialGroup()
+                .addGroup(jLayerClienteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(jtfIDCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2)
@@ -443,20 +543,20 @@ public class NotaCRUDView extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLayerProduto)
+                    .addComponent(jLayerCliente)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(jLayerTable))
-                    .addComponent(jLayerCliente))
+                    .addComponent(jLayerProduto))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLayerProduto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLayerCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLayerProduto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLayerTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -472,7 +572,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void btnCancelarProdutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarProdutoActionPerformed
-        limparCampos();
+        limparCamposProduto();
     }//GEN-LAST:event_btnCancelarProdutoActionPerformed
 
     private void btnAdicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarActionPerformed
@@ -484,7 +584,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
 
             ItemNotaTableModel model = (ItemNotaTableModel) tableProdutos.getModel();
             model.add(itemNota);
-            limparCampos();
+            limparCamposProduto();
 
         } else {
             JOptionPane.showMessageDialog(this, "Selecione um produto e insira a quantidade.");
@@ -544,6 +644,16 @@ public class NotaCRUDView extends javax.swing.JFrame {
             buscarProdutos(jtfDescricaoProduto.getText().trim());
         }
     }//GEN-LAST:event_jtfDescricaoProdutoMouseClicked
+
+    private void jtfINomeClienteKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfINomeClienteKeyReleased
+        buscarClientes(jtfDescricaoProduto.getText().trim());
+    }//GEN-LAST:event_jtfINomeClienteKeyReleased
+
+    private void jtfINomeClienteMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jtfINomeClienteMouseClicked
+        if (evt.getClickCount() == 2) {  // Seleção com duplo clique
+            buscarClientes(jtfINomeCliente.getText().trim());
+        }
+    }//GEN-LAST:event_jtfINomeClienteMouseClicked
 
     /**
      * @param args the command line arguments
@@ -606,7 +716,9 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private javax.swing.JLayeredPane jLayerProduto;
     private javax.swing.JLayeredPane jLayerTable;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JList<String> jltClientes;
     private javax.swing.JList<String> jltProdutos;
+    private javax.swing.JScrollPane jspClientes;
     private javax.swing.JScrollPane jspProdutos;
     private javax.swing.JTextField jtfDescricaoProduto;
     private javax.swing.JTextField jtfIDCliente;
@@ -620,7 +732,9 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private javax.swing.JLabel lblTotal;
     private javax.swing.JLabel lblValor;
     private javax.swing.JLabel lblValor1;
+    private javax.swing.JPopupMenu menuClientes;
     private javax.swing.JPopupMenu menuProdutos;
+    private javax.swing.JPanel panelPesquisaClientes;
     private javax.swing.JPanel panelPesquisaProdutos;
     private javax.swing.JTable tableProdutos;
     // End of variables declaration//GEN-END:variables
