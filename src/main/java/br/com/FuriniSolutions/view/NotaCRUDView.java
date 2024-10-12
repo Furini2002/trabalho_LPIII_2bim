@@ -6,14 +6,19 @@ package br.com.FuriniSolutions.view;
 
 import br.com.FuriniSolutions.bean.Cliente;
 import br.com.FuriniSolutions.bean.ItemNota;
+import br.com.FuriniSolutions.bean.NotaFiscal;
 import br.com.FuriniSolutions.bean.Produto;
 import br.com.FuriniSolutions.dao.ClienteDAO;
+import br.com.FuriniSolutions.dao.ItemNotaDAO;
+import br.com.FuriniSolutions.dao.NotaFiscalDAO;
 import br.com.FuriniSolutions.dao.ProdutoDAO;
 import br.com.FuriniSolutions.model.ItemNotaTableModel;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
+import br.com.FuriniSolutions.util.DataUtil;
 import java.awt.Color;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -34,11 +39,18 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private List<Cliente> clientes = new ArrayList<>();
     private Produto produtoSelecionado = new Produto();
     private Cliente clienteSelecionado = new Cliente();
+    private ItemNota itemSelecionado = null;
+    private int rowIndexUpdate;
     private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
+    private ItemNotaTableModel tablemodel = new ItemNotaTableModel();
+
+    private enum OperationType {
+        SAVE, EDIT
+    };
+    private OperationType type = OperationType.SAVE;
 
     public NotaCRUDView() {
         initComponents();
-        ItemNotaTableModel tablemodel = new ItemNotaTableModel();
         tableProdutos.setModel(tablemodel);
 
         // Campos não editáveis
@@ -108,11 +120,25 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
+        //listener para o cliente, caso apertar alguma tecla
         jtfINomeCliente.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent evt) {
                 buscarClientes(jtfINomeCliente.getText().trim());  // Chama a função de busca
             }
+        });
+
+        //quando clicar na table de itens nota seleciona
+        tableProdutos.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int linha = tableProdutos.getSelectedRow();
+                ItemNota itemNota = tablemodel.getItemNota(linha);
+
+                itemSelecionado = itemNota;
+                rowIndexUpdate = linha;
+            }
+
         });
 
     }
@@ -149,6 +175,15 @@ public class NotaCRUDView extends javax.swing.JFrame {
         jtfValor.setText(String.valueOf(formatadorDecimal.format(produto.getValor())));
         jtfDescricaoProduto.setText(String.valueOf(produto.getDescricao()));
         jtfTotal.setText(formatadorDecimal.format(produto.getValor()));
+        jtfQuantidade.requestFocus();
+
+    }
+
+    private void preencherCamposProduto(ItemNota item) {
+        jtfIdProduto.setText(String.valueOf(item.getProduto().getId()));
+        jtfValor.setText(String.valueOf(formatadorDecimal.format(item.getValorItem())));
+        jtfDescricaoProduto.setText(String.valueOf(item.getProduto().getDescricao()));
+        jtfTotal.setText(formatadorDecimal.format(item.getValorItem()));
         jtfQuantidade.requestFocus();
 
     }
@@ -214,8 +249,8 @@ public class NotaCRUDView extends javax.swing.JFrame {
         jltClientes = new javax.swing.JList<>();
         menuClientes = new javax.swing.JPopupMenu();
         jLayerProduto = new javax.swing.JLayeredPane();
-        btnCancelarProduto = new javax.swing.JButton();
-        btnAdicionar = new javax.swing.JButton();
+        jbtnCancelar = new javax.swing.JButton();
+        jbtnAdicionar = new javax.swing.JButton();
         jtfIdProduto = new javax.swing.JTextField();
         lblID = new javax.swing.JLabel();
         lblDescricao = new javax.swing.JLabel();
@@ -226,16 +261,20 @@ public class NotaCRUDView extends javax.swing.JFrame {
         lblTotal = new javax.swing.JLabel();
         jtfTotal = new javax.swing.JTextField();
         jtfDescricaoProduto = new javax.swing.JTextField();
+        jbtnNovoProduto = new javax.swing.JButton();
         jLayerCliente = new javax.swing.JLayeredPane();
         jLabel1 = new javax.swing.JLabel();
         jtfIDCliente = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jtfINomeCliente = new javax.swing.JTextField();
+        jbtnNovoCliente = new javax.swing.JButton();
         jLayerTable = new javax.swing.JLayeredPane();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tableProdutos = new javax.swing.JTable();
         btnSalvar = new javax.swing.JButton();
+        jbtnEditar = new javax.swing.JButton();
+        jbtnExcluir = new javax.swing.JButton();
 
         menuProdutos.setBorder(null);
         menuProdutos.setFocusable(false);
@@ -295,17 +334,17 @@ public class NotaCRUDView extends javax.swing.JFrame {
 
         jLayerProduto.setBorder(javax.swing.BorderFactory.createTitledBorder("Produto"));
 
-        btnCancelarProduto.setLabel("Cancelar");
-        btnCancelarProduto.addActionListener(new java.awt.event.ActionListener() {
+        jbtnCancelar.setLabel("Cancelar");
+        jbtnCancelar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCancelarProdutoActionPerformed(evt);
+                jbtnCancelarActionPerformed(evt);
             }
         });
 
-        btnAdicionar.setText("Adicionar");
-        btnAdicionar.addActionListener(new java.awt.event.ActionListener() {
+        jbtnAdicionar.setText("Adicionar");
+        jbtnAdicionar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAdicionarActionPerformed(evt);
+                jbtnAdicionarActionPerformed(evt);
             }
         });
 
@@ -364,8 +403,15 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
-        jLayerProduto.setLayer(btnCancelarProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
-        jLayerProduto.setLayer(btnAdicionar, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jbtnNovoProduto.setText("Novo Produto");
+        jbtnNovoProduto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbtnNovoProdutoActionPerformed(evt);
+            }
+        });
+
+        jLayerProduto.setLayer(jbtnCancelar, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(jbtnAdicionar, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerProduto.setLayer(jtfIdProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerProduto.setLayer(lblID, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerProduto.setLayer(lblDescricao, javax.swing.JLayeredPane.DEFAULT_LAYER);
@@ -376,6 +422,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
         jLayerProduto.setLayer(lblTotal, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerProduto.setLayer(jtfTotal, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerProduto.setLayer(jtfDescricaoProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerProduto.setLayer(jbtnNovoProduto, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayerProdutoLayout = new javax.swing.GroupLayout(jLayerProduto);
         jLayerProduto.setLayout(jLayerProdutoLayout);
@@ -387,7 +434,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayerProdutoLayout.createSequentialGroup()
                         .addComponent(lblValor1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jtfQuantidade, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
+                        .addComponent(jtfQuantidade)
                         .addGap(18, 18, 18)
                         .addComponent(lblValor)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -405,10 +452,11 @@ public class NotaCRUDView extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jtfDescricaoProduto))
                     .addGroup(jLayerProdutoLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnAdicionar)
+                        .addComponent(jbtnNovoProduto)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jbtnAdicionar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCancelarProduto)))
+                        .addComponent(jbtnCancelar)))
                 .addContainerGap())
         );
         jLayerProdutoLayout.setVerticalGroup(
@@ -429,8 +477,9 @@ public class NotaCRUDView extends javax.swing.JFrame {
                     .addComponent(jtfQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jLayerProdutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnAdicionar)
-                    .addComponent(btnCancelarProduto))
+                    .addComponent(jbtnAdicionar)
+                    .addComponent(jbtnCancelar)
+                    .addComponent(jbtnNovoProduto))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -451,10 +500,18 @@ public class NotaCRUDView extends javax.swing.JFrame {
             }
         });
 
+        jbtnNovoCliente.setText("+");
+        jbtnNovoCliente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbtnNovoClienteActionPerformed(evt);
+            }
+        });
+
         jLayerCliente.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerCliente.setLayer(jtfIDCliente, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerCliente.setLayer(jLabel2, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerCliente.setLayer(jtfINomeCliente, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerCliente.setLayer(jbtnNovoCliente, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayerClienteLayout = new javax.swing.GroupLayout(jLayerCliente);
         jLayerCliente.setLayout(jLayerClienteLayout);
@@ -468,7 +525,9 @@ public class NotaCRUDView extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jtfINomeCliente)
+                .addComponent(jtfINomeCliente, javax.swing.GroupLayout.PREFERRED_SIZE, 345, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jbtnNovoCliente)
                 .addContainerGap())
         );
         jLayerClienteLayout.setVerticalGroup(
@@ -478,8 +537,9 @@ public class NotaCRUDView extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(jtfIDCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2)
-                    .addComponent(jtfINomeCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(8, Short.MAX_VALUE))
+                    .addComponent(jtfINomeCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jbtnNovoCliente, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -498,16 +558,32 @@ public class NotaCRUDView extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(tableProdutos);
 
-        btnSalvar.setText("Salvar nota");
+        btnSalvar.setText("Lançar nota");
         btnSalvar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSalvarActionPerformed(evt);
             }
         });
 
+        jbtnEditar.setText("Editar");
+        jbtnEditar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbtnEditarActionPerformed(evt);
+            }
+        });
+
+        jbtnExcluir.setText("Excluir");
+        jbtnExcluir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbtnExcluirActionPerformed(evt);
+            }
+        });
+
         jLayerTable.setLayer(jLabel3, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerTable.setLayer(jScrollPane1, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerTable.setLayer(btnSalvar, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerTable.setLayer(jbtnEditar, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerTable.setLayer(jbtnExcluir, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayerTableLayout = new javax.swing.GroupLayout(jLayerTable);
         jLayerTable.setLayout(jLayerTableLayout);
@@ -519,7 +595,10 @@ public class NotaCRUDView extends javax.swing.JFrame {
                         .addComponent(jLabel3)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayerTableLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jbtnExcluir)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jbtnEditar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnSalvar))
                     .addComponent(jScrollPane1))
                 .addContainerGap())
@@ -532,7 +611,10 @@ public class NotaCRUDView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
-                .addComponent(btnSalvar)
+                .addGroup(jLayerTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSalvar)
+                    .addComponent(jbtnEditar)
+                    .addComponent(jbtnExcluir))
                 .addContainerGap())
         );
 
@@ -555,7 +637,7 @@ public class NotaCRUDView extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLayerCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLayerProduto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLayerTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -568,28 +650,64 @@ public class NotaCRUDView extends javax.swing.JFrame {
 
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
+        NotaFiscal nota = new NotaFiscal();
+        
+        nota.setDataEmissao(DataUtil.dataAtual());
+        nota.setCliente(clienteSelecionado);
+        nota.setListaItens(tablemodel.getlist());
+        
+        try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
+                    NotaFiscalDAO dao = new NotaFiscalDAO(con);
+                    try {
+                        dao.create(nota);
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(this, "Erro ao salvar nota fiscal: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
 
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(this, "Erro ao conectar com o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+
+                limparCamposProduto();                
+                jtfIDCliente.setText("");
+                jtfINomeCliente.setText("");
+                tablemodel.removeAll();
     }//GEN-LAST:event_btnSalvarActionPerformed
 
-    private void btnCancelarProdutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarProdutoActionPerformed
+    private void jbtnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnCancelarActionPerformed
         limparCamposProduto();
-    }//GEN-LAST:event_btnCancelarProdutoActionPerformed
+    }//GEN-LAST:event_jbtnCancelarActionPerformed
 
-    private void btnAdicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarActionPerformed
-        if (produtoSelecionado != null && !jtfQuantidade.getText().isEmpty()) {
-            ItemNota itemNota = new ItemNota();
-            itemNota.setProduto(produtoSelecionado);
-            itemNota.setQuantidade(Integer.parseInt(jtfQuantidade.getText()));
-            itemNota.setValorItem(produtoSelecionado.getValor());
+    private void jbtnAdicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnAdicionarActionPerformed
+        if (this.type == OperationType.SAVE) { //SALVA no banco  
+            if (produtoSelecionado != null && !jtfQuantidade.getText().isEmpty()) {
+                ItemNota itemNota = new ItemNota();
+                itemNota.setProduto(produtoSelecionado);
+                itemNota.setQuantidade(Integer.parseInt(jtfQuantidade.getText()));
+                itemNota.setValorItem(produtoSelecionado.getValor());
 
-            ItemNotaTableModel model = (ItemNotaTableModel) tableProdutos.getModel();
-            model.add(itemNota);
-            limparCamposProduto();
+                ItemNotaTableModel model = (ItemNotaTableModel) tableProdutos.getModel();
+                model.add(itemNota);
+                limparCamposProduto();
 
+            } else {
+                JOptionPane.showMessageDialog(this, "Selecione um produto e insira a quantidade.");
+            }
         } else {
-            JOptionPane.showMessageDialog(this, "Selecione um produto e insira a quantidade.");
+            if (rowIndexUpdate >= 0) {
+                ItemNota itemNota = new ItemNota();
+                itemNota.setProduto(produtoSelecionado);
+                itemNota.setQuantidade(Integer.parseInt(jtfQuantidade.getText()));
+                itemNota.setValorItem(produtoSelecionado.getValor());
+
+                tablemodel.updateItemAt(rowIndexUpdate, itemNota);
+                jbtnAdicionar.setText("Adicionar");
+                limparCamposProduto();
+                tableProdutos.clearSelection();
+            }
+
         }
-    }//GEN-LAST:event_btnAdicionarActionPerformed
+    }//GEN-LAST:event_jbtnAdicionarActionPerformed
 
     private void jtfIdProdutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfIdProdutoActionPerformed
         // TODO add your handling code here:
@@ -655,6 +773,39 @@ public class NotaCRUDView extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jtfINomeClienteMouseClicked
 
+    private void jbtnNovoProdutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnNovoProdutoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jbtnNovoProdutoActionPerformed
+
+    private void jbtnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnEditarActionPerformed
+        if (itemSelecionado == null) {
+            JOptionPane.showMessageDialog(this, "Selecione um item na tabela");
+        } else {
+            preencherCamposProduto(itemSelecionado);
+            jbtnAdicionar.setText("Salvar alterações");
+            this.type = OperationType.EDIT;
+        }
+    }//GEN-LAST:event_jbtnEditarActionPerformed
+
+    private void jbtnNovoClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnNovoClienteActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jbtnNovoClienteActionPerformed
+
+    private void jbtnExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnExcluirActionPerformed
+        if (itemSelecionado == null) {
+            JOptionPane.showMessageDialog(this, "Selecione um item na tabela");
+        } else {
+            int confirmacao = JOptionPane.showConfirmDialog(this,
+                    "Tem certeza de que deseja excluir este item?",
+                    "Confirmação de Exclusão",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirmacao == JOptionPane.YES_OPTION) {
+                tablemodel.delete(itemSelecionado);
+            }
+        }
+    }//GEN-LAST:event_jbtnExcluirActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -706,8 +857,6 @@ public class NotaCRUDView extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnAdicionar;
-    private javax.swing.JButton btnCancelarProduto;
     private javax.swing.JButton btnSalvar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -716,6 +865,12 @@ public class NotaCRUDView extends javax.swing.JFrame {
     private javax.swing.JLayeredPane jLayerProduto;
     private javax.swing.JLayeredPane jLayerTable;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton jbtnAdicionar;
+    private javax.swing.JButton jbtnCancelar;
+    private javax.swing.JButton jbtnEditar;
+    private javax.swing.JButton jbtnExcluir;
+    private javax.swing.JButton jbtnNovoCliente;
+    private javax.swing.JButton jbtnNovoProduto;
     private javax.swing.JList<String> jltClientes;
     private javax.swing.JList<String> jltProdutos;
     private javax.swing.JScrollPane jspClientes;

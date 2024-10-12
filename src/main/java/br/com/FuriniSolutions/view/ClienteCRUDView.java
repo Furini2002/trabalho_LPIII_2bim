@@ -14,7 +14,6 @@ import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
-        
 
 /**
  *
@@ -289,15 +288,22 @@ public class ClienteCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnExcluirActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
-        this.type = OperationType.EDIT;
+        if (clienteSelecionado == null) {
+            JOptionPane.showMessageDialog(this, "Selecione um item na tabela");
+        } else {
+            this.type = OperationType.EDIT;
 
-        btnSalvar.setEnabled(true);
-        btnCancelar.setEnabled(true);
+            btnSalvar.setEnabled(true);
+            btnCancelar.setEnabled(true);
 
-        btnEditar.setEnabled(false);
-        btnExcluir.setEnabled(false);
+            btnEditar.setEnabled(false);
+            btnExcluir.setEnabled(false);
 
-        populaForm(clienteSelecionado);
+            populaForm(clienteSelecionado);
+
+        }
+
+
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed

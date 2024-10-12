@@ -30,7 +30,7 @@ public class ItemNotaTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int linha, int coluna) {
         ItemNota item = linhas.get(linha);
-        return switch (coluna) {            
+        return switch (coluna) {
             case 0 ->
                 item.getProduto().getDescricao();
             case 1 ->
@@ -57,7 +57,7 @@ public class ItemNotaTableModel extends AbstractTableModel {
     public void setProdutos(List<ItemNota> itens) {
         this.linhas = itens;
     }
-    
+
     public void add(ItemNota item) {
         int rowIndex = linhas.size();
         this.linhas.add(item);
@@ -74,6 +74,29 @@ public class ItemNotaTableModel extends AbstractTableModel {
         int rowIndex = linhas.indexOf(item);
         this.linhas.remove(item);
         this.fireTableRowsDeleted(rowIndex, rowIndex);
+    }
+
+    public ItemNota getItemNota(int linha) {
+        return linhas.get(linha);
+    }
+
+    // Método para atualizar um item na tabela com base no indice
+    public void updateItemAt(int rowIndex, ItemNota updatedItem) {
+        if (rowIndex >= 0 && rowIndex < linhas.size()) {
+            // Atualiza o item na posição indicada
+            linhas.set(rowIndex, updatedItem);
+            // Notifica que a linha foi atualizada
+            fireTableRowsUpdated(rowIndex, rowIndex);
+        }
+    }
+    
+    public List<ItemNota> getlist(){
+        return this.linhas;
+    }
+    
+    public void removeAll() {
+        linhas.clear(); // Limpa a lista de dados
+        fireTableDataChanged(); // Notifica a tabela que os dados foram removidos
     }
 
 }
