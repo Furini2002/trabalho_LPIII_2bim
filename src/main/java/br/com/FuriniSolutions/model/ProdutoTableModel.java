@@ -15,7 +15,6 @@ public class ProdutoTableModel extends AbstractTableModel {
 
     private List<Produto> linhas = new ArrayList<>();
     private String[] colunas = {"ID", "Descrição", "Valor (R$)"};
-    // Criação do DecimalFormat para formatar com vírgula e duas casas decimais
     private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
 
     @Override
@@ -73,6 +72,10 @@ public class ProdutoTableModel extends AbstractTableModel {
 
     public Produto getProduto(int linha) {
         return linhas.get(linha);
+    }
+
+    public void setProdutos(List<Produto> produtos) {
+        this.linhas = produtos;
     }
 
 }

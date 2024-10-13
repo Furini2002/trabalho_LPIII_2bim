@@ -231,7 +231,7 @@ public class ClienteCRUDView extends javax.swing.JFrame {
                     .addComponent(btnEditar)
                     .addComponent(btnSalvar)
                     .addComponent(btnCancelar))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -239,6 +239,7 @@ public class ClienteCRUDView extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jtfNomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfNomeActionPerformed
@@ -286,15 +287,22 @@ public class ClienteCRUDView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnExcluirActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
-        this.type = OperationType.EDIT;
+        if (clienteSelecionado == null) {
+            JOptionPane.showMessageDialog(this, "Selecione um item na tabela");
+        } else {
+            this.type = OperationType.EDIT;
 
-        btnSalvar.setEnabled(true);
-        btnCancelar.setEnabled(true);
+            btnSalvar.setEnabled(true);
+            btnCancelar.setEnabled(true);
 
-        btnEditar.setEnabled(false);
-        btnExcluir.setEnabled(false);
+            btnEditar.setEnabled(false);
+            btnExcluir.setEnabled(false);
 
-        populaForm(clienteSelecionado);
+            populaForm(clienteSelecionado);
+
+        }
+
+
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed

@@ -5,7 +5,9 @@ import br.com.FuriniSolutions.util.ConnectionsFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -125,6 +127,28 @@ public class ProdutoDAO implements Dao<Integer, Produto> { // <o tipo de dados d
 
         return produtos;
 
+    }
+
+    public List<Produto> buscarPorDescricao(String descricao) throws SQLException {
+        List<Produto> produtos = new ArrayList<>();
+        String sql = "SELECT * FROM produto WHERE descricao LIKE ?";
+
+        try ( PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, "%" + descricao + "%"); // Busca parcial
+            try ( ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Produto produto = new Produto();
+                    produto.setId(rs.getInt("id"));
+                    produto.setDescricao(rs.getString("descricao"));
+                    produto.setValor(rs.getDouble("valor"));
+                    // Preenche outros atributos, se necessário
+
+                    produtos.add(produto);
+                }
+            }
+        }
+
+        return produtos;
     }
 
 }

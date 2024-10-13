@@ -6,7 +6,9 @@ import br.com.FuriniSolutions.util.ConnectionsFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -119,6 +121,28 @@ public class ClienteDAO implements Dao<Integer, Cliente> { // <o tipo de dados d
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+
+        return clientes;
+    }
+    
+    
+    public List<Cliente> buscarPorDescricao(String nome) throws SQLException {
+        List<Cliente> clientes = new ArrayList<>();
+        String sql = "SELECT * FROM cliente WHERE nome LIKE ?";
+
+        try ( PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, "%" + nome + "%"); // Busca parcial
+            try ( ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Cliente cliente = new Cliente();
+                    cliente.setId(rs.getInt("id"));
+                    cliente.setNome(rs.getString("nome"));
+                    cliente.setEndereco(rs.getString("endereco"));
+
+                    clientes.add(cliente);
+                }
+            }
         }
 
         return clientes;

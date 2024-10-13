@@ -15,8 +15,10 @@
                 <version>3.0.0-M5</version> <!-- Versão recente -->
                 <configuration>
                     <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+                    <parallel>none</parallel>
                 </configuration>
             </plugin>
+            
         </plugins>
     </build>
 
@@ -50,7 +52,9 @@
             <artifactId>junit-platform-launcher</artifactId>
             <version>1.9.0</version> <!-- Atualize para a versão mais recente -->
             <scope>test</scope>
-        </dependency>
+        </dependency>       
+        
+
     </dependencies>
 
     <properties>
