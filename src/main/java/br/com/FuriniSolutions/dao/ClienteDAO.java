@@ -1,8 +1,6 @@
 package br.com.FuriniSolutions.dao;
 
 import br.com.FuriniSolutions.bean.Cliente;
-import br.com.FuriniSolutions.bean.Produto;
-import br.com.FuriniSolutions.util.ConnectionsFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

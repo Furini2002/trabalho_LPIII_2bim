@@ -1,7 +1,6 @@
 package br.com.FuriniSolutions.dao;
 
 import br.com.FuriniSolutions.bean.Produto;
-import br.com.FuriniSolutions.util.ConnectionsFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,7 +9,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 public class ProdutoDAO implements Dao<Integer, Produto> { // <o tipo de dados da PK, o tipo de dados que ela vai informar ou receber>
 
