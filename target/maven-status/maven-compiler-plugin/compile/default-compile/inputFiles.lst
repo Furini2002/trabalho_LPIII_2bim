@@ -1,14 +1,18 @@
-E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\model\ProdutoSearchWithPopupMenu.java
+E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\util\Observer.java
+E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\model\ItemNotaTableModel.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\bean\Produto.java
+E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\view\NotaCreateView.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\view\ProdutoCRUDView.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\dao\Dao.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\model\ProdutoComboBoxModel.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\dao\ProdutoDAO.java
+E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\model\NotaFiscalTableModel.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\view\ClienteCRUDView.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\dao\ClienteDAO.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\model\ProdutoTableModel.java
-E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\view\NotaCRUDView.java
+E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\view\NotaFindAll.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\dao\ItemNotaDAO.java
+E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\view\Principal.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\bean\Cliente.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\dao\NotaFiscalDAO.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\bean\ItemNota.java
@@ -16,3 +20,4 @@ E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\bean\NotaFisca
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\util\DataUtil.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\model\ClienteTableModel.java
 E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\util\ConnectionsFactory.java
+E:\LPIII\2_bim\Trabalho_2bim\src\main\java\br\com\FuriniSolutions\view\NotaReadView.java
