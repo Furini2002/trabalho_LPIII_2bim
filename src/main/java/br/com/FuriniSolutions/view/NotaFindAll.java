@@ -8,6 +8,7 @@ import br.com.FuriniSolutions.bean.NotaFiscal;
 import br.com.FuriniSolutions.dao.NotaFiscalDAO;
 import br.com.FuriniSolutions.model.NotaFiscalTableModel;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
+import br.com.FuriniSolutions.util.Observer;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
@@ -20,7 +21,7 @@ import javax.swing.JOptionPane;
  *
  * @author lucas
  */
-public class NotaFindAll extends javax.swing.JFrame {
+public class NotaFindAll extends javax.swing.JFrame implements Observer{
 
     private List<NotaFiscal> notas = new ArrayList<>();
     NotaFiscalTableModel tableModel = new NotaFiscalTableModel();
@@ -78,6 +79,18 @@ public class NotaFindAll extends javax.swing.JFrame {
         jbtnNovaNota = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                formFocusGained(evt);
+            }
+        });
+        addWindowFocusListener(new java.awt.event.WindowFocusListener() {
+            public void windowGainedFocus(java.awt.event.WindowEvent evt) {
+                formWindowGainedFocus(evt);
+            }
+            public void windowLostFocus(java.awt.event.WindowEvent evt) {
+            }
+        });
 
         tableNotas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -138,7 +151,9 @@ public class NotaFindAll extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jbtnNovaNotaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnNovaNotaActionPerformed
+        
         NotaCreateView view = new NotaCreateView();
+        view.addObserver(this); // adicionando um observer
         view.setVisible(true);
     }//GEN-LAST:event_jbtnNovaNotaActionPerformed
 
@@ -146,6 +161,13 @@ public class NotaFindAll extends javax.swing.JFrame {
         NotaReadView view = new NotaReadView(notaselecionada);
         view.setVisible(true);
     }//GEN-LAST:event_jbtnVisualizarActionPerformed
+
+    private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
+        
+    }//GEN-LAST:event_formFocusGained
+
+    private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
+    }//GEN-LAST:event_formWindowGainedFocus
 
     /**
      * @param args the command line arguments
@@ -191,4 +213,12 @@ public class NotaFindAll extends javax.swing.JFrame {
     private javax.swing.JButton jbtnVisualizar;
     private javax.swing.JTable tableNotas;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void update(NotaFiscal notaNova) {
+        tableModel.add(notaNova);
+        tableModel.fireTableDataChanged();
+    }
+
+    
 }

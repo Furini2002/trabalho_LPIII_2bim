@@ -9,12 +9,13 @@ import br.com.FuriniSolutions.bean.ItemNota;
 import br.com.FuriniSolutions.bean.NotaFiscal;
 import br.com.FuriniSolutions.bean.Produto;
 import br.com.FuriniSolutions.dao.ClienteDAO;
-import br.com.FuriniSolutions.dao.ItemNotaDAO;
 import br.com.FuriniSolutions.dao.NotaFiscalDAO;
 import br.com.FuriniSolutions.dao.ProdutoDAO;
 import br.com.FuriniSolutions.model.ItemNotaTableModel;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
 import br.com.FuriniSolutions.util.DataUtil;
+import br.com.FuriniSolutions.util.Observer;
+import br.com.FuriniSolutions.util.Subject;
 import java.awt.Color;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -33,8 +34,9 @@ import javax.swing.JOptionPane;
  *
  * @author lucas
  */
-public class NotaCreateView extends javax.swing.JFrame {
+public class NotaCreateView extends javax.swing.JFrame implements Subject {
 
+    private List<Observer> observers = new ArrayList<>();
     private List<Produto> produtos = new ArrayList<>();
     private List<Cliente> clientes = new ArrayList<>();
     private Produto produtoSelecionado = new Produto();
@@ -43,6 +45,27 @@ public class NotaCreateView extends javax.swing.JFrame {
     private int rowIndexUpdate;
     private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
     private ItemNotaTableModel tablemodel = new ItemNotaTableModel();
+
+    @Override
+    public void addObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        int index = observers.indexOf(observer);
+
+        if (index > -1) {
+            observers.remove(observer);
+        }
+    }
+
+    @Override
+    public void notifyObservers(NotaFiscal notaNova) {
+        for (Observer o : observers) {
+            o.update(notaNova);
+        }
+    }
 
     private enum OperationType {
         SAVE, EDIT
@@ -167,8 +190,7 @@ public class NotaCreateView extends javax.swing.JFrame {
                 produtos = produtoDAO.buscarPorDescricao(search);  // Filtra pela descrição
             }
 
-            
-            DefaultListModel<String> listModel = new DefaultListModel<>();            
+            DefaultListModel<String> listModel = new DefaultListModel<>();
             for (int i = 0; i < produtos.size(); i++) {
                 listModel.addElement(produtos.get(i).getDescricao());
             }
@@ -208,7 +230,7 @@ public class NotaCreateView extends javax.swing.JFrame {
             } else {
                 clientes = clienteDAO.buscarPorDescricao(search);  // Filtra os clientes pela descrição
             }
-            
+
             // Atualizando o JList com os clientes encontrados
             DefaultListModel<String> listModel = new DefaultListModel<>();
             for (int i = 0; i < clientes.size(); i++) {
@@ -688,6 +710,7 @@ public class NotaCreateView extends javax.swing.JFrame {
 
         if (confirmacao == JOptionPane.YES_OPTION) {
             salvarNotaFiscal();
+
         }
     }//GEN-LAST:event_btnSalvarActionPerformed
 
@@ -700,6 +723,9 @@ public class NotaCreateView extends javax.swing.JFrame {
         try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
             NotaFiscalDAO dao = new NotaFiscalDAO(con);
             dao.create(nota);
+            
+            notifyObservers(nota);// avisando os observers
+            
             JOptionPane.showMessageDialog(this, "Nota fiscal lançada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             limparTodosCampos();
         } catch (SQLException e) {

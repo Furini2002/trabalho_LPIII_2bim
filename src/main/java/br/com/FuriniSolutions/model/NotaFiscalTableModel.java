@@ -1,9 +1,7 @@
 package br.com.FuriniSolutions.model;
 
-import br.com.FuriniSolutions.bean.ItemNota;
 import br.com.FuriniSolutions.bean.NotaFiscal;
-import br.com.FuriniSolutions.bean.Produto;
-import java.text.DecimalFormat;
+import br.com.FuriniSolutions.util.Observer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -95,6 +93,6 @@ public class NotaFiscalTableModel extends AbstractTableModel {
     public void removeAll() {
         linhas.clear(); // Limpa a lista de dados
         fireTableDataChanged(); // Notifica a tabela que os dados foram removidos
-    }
+    }    
 
 }
