@@ -4,9 +4,11 @@ import br.com.FuriniSolutions.bean.ItemNota;
 import br.com.FuriniSolutions.bean.NotaFiscal;
 import br.com.FuriniSolutions.bean.Produto;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
+import java.io.IOError;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
@@ -132,13 +134,14 @@ public ItemNota retrive(Integer pk) {
     String sql = "SELECT id, quantidade, valorItem, produto_id, notaFiscal_id FROM itemnota";
 
     // Usar uma única conexão para todas as operações
-    try (Connection connection = ConnectionsFactory.createConnetionToMySQL();
-         PreparedStatement query = connection.prepareStatement(sql)) {
+    
+        try {
+             PreparedStatement query = con.prepareStatement(sql);
 
-        try (ResultSet rs = query.executeQuery()) {
+         ResultSet rs = query.executeQuery();
             // Criar os DAOs com a mesma conexão
-            ProdutoDAO produtoDao = new ProdutoDAO(connection);
-            NotaFiscalDAO notaFiscalDao = new NotaFiscalDAO(connection);
+            ProdutoDAO produtoDao = new ProdutoDAO(con);
+            NotaFiscalDAO notaFiscalDao = new NotaFiscalDAO(con);
 
             while (rs.next()) {
                 ItemNota itemNota = new ItemNota();
@@ -152,12 +155,10 @@ public ItemNota retrive(Integer pk) {
 
                 itemnotas.add(itemNota);
             }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
-
-    } catch (Exception e) {
-        System.err.println("Erro ao buscar todos os ItemNotas: " + e.getMessage());
-        e.printStackTrace(); // Exibe o stack trace para facilitar a depuração
-    }
+    
 
     return itemnotas;
 }

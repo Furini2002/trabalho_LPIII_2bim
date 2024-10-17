@@ -10,7 +10,9 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -165,9 +167,8 @@ public class NotaFiscalDAO implements Dao<Integer, NotaFiscal> { // <o tipo de d
                         ClienteDAO clienteDao = new ClienteDAO(con);
                         notaFiscal.setCliente(clienteDao.retrive(rs.getInt("cliente_id")));
 
-                        ItemNotaDAO itemNotaDao = new ItemNotaDAO(con);
-                        notaFiscal.setListaItens(itemNotaDao.findAllWithIDNota(rs.getInt("id")));
-
+                        /*ItemNotaDAO itemNotaDao = new ItemNotaDAO(con);
+                        notaFiscal.setListaItens(itemNotaDao.findAllWithIDNota(rs.getInt("id")));*/
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
@@ -182,5 +183,4 @@ public class NotaFiscalDAO implements Dao<Integer, NotaFiscal> { // <o tipo de d
 
         return notasFiscais;
     }
-
 }
