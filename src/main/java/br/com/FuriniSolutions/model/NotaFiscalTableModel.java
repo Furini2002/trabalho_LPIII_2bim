@@ -1,6 +1,7 @@
 package br.com.FuriniSolutions.model;
 
 import br.com.FuriniSolutions.bean.NotaFiscal;
+import br.com.FuriniSolutions.util.DataUtil;
 import br.com.FuriniSolutions.util.Observer;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class NotaFiscalTableModel extends AbstractTableModel {
             case 1 ->
                 nota.getCliente().getNome();
             case 2 ->
-                nota.getDataEmissao();            
+                DataUtil.formatarData(nota.getDataEmissao());            
             default ->
                 throw new IllegalArgumentException("Coluna inválida: " + coluna);
         };

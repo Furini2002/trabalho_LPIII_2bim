@@ -1,5 +1,6 @@
 package br.com.FuriniSolutions.util;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -9,16 +10,9 @@ public class DataUtils {
 
     // Método utilitário estático para formatar uma data do tipo java.util.Date
     public static String formatarData(Date data) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String pattern = "dd/MM/yyyy";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 
-        // Converter Date para LocalDate
-        LocalDate localDate = data.toInstant()
-                                  .atZone(ZoneId.systemDefault())
-                                  .toLocalDate();
-
-        // Formatar a data como string
-        return localDate.format(formatter);
+        return simpleDateFormat.format(data);
     }
 }
-
-
