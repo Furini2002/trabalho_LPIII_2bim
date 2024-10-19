@@ -7,26 +7,15 @@ package br.com.FuriniSolutions.view;
 import br.com.FuriniSolutions.bean.Cliente;
 import br.com.FuriniSolutions.bean.ItemNota;
 import br.com.FuriniSolutions.bean.NotaFiscal;
-import br.com.FuriniSolutions.bean.Produto;
-import br.com.FuriniSolutions.dao.ClienteDAO;
 import br.com.FuriniSolutions.dao.ItemNotaDAO;
-import br.com.FuriniSolutions.dao.NotaFiscalDAO;
-import br.com.FuriniSolutions.dao.ProdutoDAO;
 import br.com.FuriniSolutions.model.ItemNotaTableModel;
 import br.com.FuriniSolutions.util.ConnectionsFactory;
-import br.com.FuriniSolutions.util.DataUtil;
 import java.awt.Color;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 
 /**
@@ -37,6 +26,7 @@ public class NotaReadView extends javax.swing.JFrame {
 
     private List<ItemNota> itensNota = new ArrayList<>();
     private ItemNotaTableModel tablemodel = new ItemNotaTableModel();
+    private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
 
     private NotaReadView() {
         initComponents();
@@ -60,8 +50,13 @@ public class NotaReadView extends javax.swing.JFrame {
         jtfINomeCliente.setForeground(Color.DARK_GRAY);
         jtfINomeCliente.setEditable(false);
 
+        jtfTotal.setBackground(Color.LIGHT_GRAY);
+        jtfTotal.setForeground(Color.DARK_GRAY);
+        jtfTotal.setEditable(false);
+
         buscarItens(nota.getId());
         preencherCamposCliente(nota.getCliente());
+        calcularTotal();
     }
 
     private void buscarItens(Integer pk) {
@@ -82,6 +77,17 @@ public class NotaReadView extends javax.swing.JFrame {
 
     }
 
+    public void calcularTotal() {
+        List<ItemNota> itensnota = tablemodel.getlist();
+        Double total = 0.0;
+
+        for (ItemNota itemNota : itensnota) {
+            total += itemNota.getQuantidade() * itemNota.getValorItem();
+        }
+
+        jtfTotal.setText("R$: " + String.valueOf(formatadorDecimal.format(total)));
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -100,6 +106,8 @@ public class NotaReadView extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tableProdutos = new javax.swing.JTable();
+        jtfTotal = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Cadastrando nota fiscal");
@@ -213,8 +221,16 @@ public class NotaReadView extends javax.swing.JFrame {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
+
+        jtfTotal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jtfTotalActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setText("Total:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -224,16 +240,25 @@ public class NotaReadView extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLayerCliente)
-                    .addComponent(jLayerTable))
+                    .addComponent(jLayerTable)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jtfTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .addComponent(jLayerCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLayerTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jtfTotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -261,6 +286,10 @@ public class NotaReadView extends javax.swing.JFrame {
 
     private void jLayerTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jLayerTableFocusLost
     }//GEN-LAST:event_jLayerTableFocusLost
+
+    private void jtfTotalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfTotalActionPerformed
+
+    }//GEN-LAST:event_jtfTotalActionPerformed
 
     /**
      * @param args the command line arguments
@@ -372,11 +401,13 @@ public class NotaReadView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLayeredPane jLayerCliente;
     private javax.swing.JLayeredPane jLayerTable;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jtfIDCliente;
     private javax.swing.JTextField jtfINomeCliente;
+    private javax.swing.JTextField jtfTotal;
     private javax.swing.JTable tableProdutos;
     // End of variables declaration//GEN-END:variables
 }

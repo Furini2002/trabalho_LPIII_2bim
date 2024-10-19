@@ -14,7 +14,7 @@ import javax.swing.table.AbstractTableModel;
 public class ItemNotaTableModel extends AbstractTableModel {
 
     private List<ItemNota> linhas = new ArrayList<>();
-    private String[] colunas = {"Descrição", "Quant.", "Valor (R$)", "Total"};
+    private String[] colunas = {"Descrição", "Quant.", "Valor (R$)", "Total (R$)"};
     private DecimalFormat formatadorDecimal = new DecimalFormat("#,##0.00");
 
     @Override

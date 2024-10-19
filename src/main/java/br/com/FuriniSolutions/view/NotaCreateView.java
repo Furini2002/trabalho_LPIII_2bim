@@ -92,6 +92,10 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
         jtfIDCliente.setBackground(Color.LIGHT_GRAY);
         jtfIDCliente.setForeground(Color.DARK_GRAY);
         jtfIDCliente.setEditable(false);
+        
+        jtfTotalNota.setBackground(Color.LIGHT_GRAY);
+        jtfTotalNota.setForeground(Color.DARK_GRAY);
+        jtfTotalNota.setEditable(false);
 
         atualizarEstadoBotoes(true);
 
@@ -258,6 +262,18 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
         jtfQuantidade.setText("");
         jtfTotal.setText("");
         jtfValor.setText("");
+        jtfTotalNota.setText("");
+    }
+
+    private void atualizarTotalNota() {
+        double totalNota = 0.0;
+
+        for (int i = 0; i < tablemodel.getRowCount(); i++) {
+            ItemNota itemNota = tablemodel.getItemNota(i);
+            totalNota += itemNota.getValorItem() * itemNota.getQuantidade();
+        }
+
+        jtfTotalNota.setText("R$ " + formatadorDecimal.format(totalNota));
     }
 
     /**
@@ -304,6 +320,8 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
         btnSalvar = new javax.swing.JButton();
         jbtnEditar = new javax.swing.JButton();
         jbtnExcluir = new javax.swing.JButton();
+        jtfTotalNota = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
 
         menuProdutos.setBorder(null);
         menuProdutos.setFocusable(false);
@@ -624,11 +642,21 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
             }
         });
 
+        jtfTotalNota.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jtfTotalNotaActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setText("Total:");
+
         jLayerTable.setLayer(jLabel3, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerTable.setLayer(jScrollPane1, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerTable.setLayer(btnSalvar, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerTable.setLayer(jbtnEditar, javax.swing.JLayeredPane.DEFAULT_LAYER);
         jLayerTable.setLayer(jbtnExcluir, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerTable.setLayer(jtfTotalNota, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        jLayerTable.setLayer(jLabel4, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout jLayerTableLayout = new javax.swing.GroupLayout(jLayerTable);
         jLayerTable.setLayout(jLayerTableLayout);
@@ -645,7 +673,12 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
                         .addComponent(jbtnEditar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnSalvar))
-                    .addComponent(jScrollPane1))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jLayerTableLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jtfTotalNota, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jLayerTableLayout.setVerticalGroup(
@@ -655,7 +688,11 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jLayerTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jtfTotalNota, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jLayerTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSalvar)
                     .addComponent(jbtnEditar)
@@ -680,11 +717,11 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(10, Short.MAX_VALUE)
                 .addComponent(jLayerCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLayerProduto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLayerTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -723,9 +760,9 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
         try ( Connection con = ConnectionsFactory.createConnetionToMySQL()) {
             NotaFiscalDAO dao = new NotaFiscalDAO(con);
             dao.create(nota);
-            
+
             notifyObservers(nota);// avisando os observers
-            
+
             JOptionPane.showMessageDialog(this, "Nota fiscal lançada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             limparTodosCampos();
         } catch (SQLException e) {
@@ -757,11 +794,12 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
                 ItemNotaTableModel model = (ItemNotaTableModel) tableProdutos.getModel();
                 model.add(itemNota);
                 limparCamposProduto();
+                atualizarTotalNota();
 
             } else {
                 JOptionPane.showMessageDialog(this, "Selecione um produto e insira a quantidade.");
             }
-        } else {
+        } else { //edita no banco
             if (rowIndexUpdate >= 0) {
                 ItemNota itemNota = new ItemNota();
                 itemNota.setProduto(produtoSelecionado);
@@ -772,6 +810,7 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
                 jbtnAdicionar.setText("Adicionar");
                 limparCamposProduto();
                 tableProdutos.clearSelection();
+                atualizarTotalNota();
             }
 
         }
@@ -867,6 +906,7 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
 
             if (confirmacao == JOptionPane.YES_OPTION) {
                 tablemodel.delete(itemSelecionado);
+                atualizarTotalNota();
             }
         }
         atualizarEstadoBotoes(true);
@@ -880,6 +920,10 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
 
     private void jLayerTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jLayerTableFocusLost
     }//GEN-LAST:event_jLayerTableFocusLost
+
+    private void jtfTotalNotaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfTotalNotaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jtfTotalNotaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -992,6 +1036,7 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLayeredPane jLayerCliente;
     private javax.swing.JLayeredPane jLayerProduto;
     private javax.swing.JLayeredPane jLayerTable;
@@ -1012,6 +1057,7 @@ public class NotaCreateView extends javax.swing.JFrame implements Subject {
     private javax.swing.JTextField jtfIdProduto;
     private javax.swing.JTextField jtfQuantidade;
     private javax.swing.JTextField jtfTotal;
+    private javax.swing.JTextField jtfTotalNota;
     private javax.swing.JTextField jtfValor;
     private javax.swing.JLabel lblDescricao;
     private javax.swing.JLabel lblID;
