@@ -1,9 +1,31 @@
 package br.com.FuriniSolutions.bean;
 
-public class Cliente {    
+import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import java.util.List;
+
+@Entity
+public class Cliente {   
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    
+    @Basic
+    @Column(length = 100, nullable = false)
     private String nome;
+    
+    @Basic
+    @Column(length = 120)
     private String endereco;
+    
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cliente")
+    private List<NotaFiscal> notasfiscais;
 
     public Cliente() {        
     }
@@ -31,9 +53,17 @@ public class Cliente {
         this.endereco = endereco;
     }
 
+    public List<NotaFiscal> getNotasfiscais() {
+        return notasfiscais;
+    }
+
+    public void setNotasfiscais(List<NotaFiscal> notasfiscais) {
+        this.notasfiscais = notasfiscais;
+    }
+
     @Override
     public String toString() {
-        return "Cliente{" + "id=" + id + ", nome=" + nome + ", endereco=" + endereco + '}';
+        return nome;
     }
 
     public Cliente(String nome, String endereco) {        

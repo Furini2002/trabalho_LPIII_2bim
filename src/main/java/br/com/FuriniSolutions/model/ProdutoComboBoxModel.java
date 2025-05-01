@@ -7,7 +7,6 @@ package br.com.FuriniSolutions.model;
 import br.com.FuriniSolutions.bean.Produto;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ListDataListener;
 

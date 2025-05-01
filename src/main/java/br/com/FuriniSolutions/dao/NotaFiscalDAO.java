@@ -1,167 +1,111 @@
 package br.com.FuriniSolutions.dao;
 
-import br.com.FuriniSolutions.bean.ItemNota;
+import br.com.FuriniSolutions.bean.Cliente;
 import br.com.FuriniSolutions.bean.NotaFiscal;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.LinkedList;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
-public class NotaFiscalDAO implements Dao<Integer, NotaFiscal> { // <o tipo de dados da PK, o tipo de dados que ela vai informar ou receber>
+public class NotaFiscalDAO extends GenericDAO<NotaFiscal> {
 
-    protected Connection con;
-
-    public NotaFiscalDAO(Connection con) {
-        this.con = con;
+    public NotaFiscalDAO() {
+        super(NotaFiscal.class);
     }
 
-    @Override
-    public void create(NotaFiscal entity) {
-        String sql = "INSERT INTO notafiscal (dataEmissao, cliente_id) values (?, ?);";
+    //Buscar todas as notas fiscais emitidas para um cliente específico.    
+    public List<NotaFiscal> buscarNotasClienteEspecifico(Cliente cliente) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<NotaFiscal> query = em.createQuery(""
+                    + "SELECT n "
+                    + "FROM NotaFiscal n "
+                    + "WHERE n.cliente = :cliente",
+                    NotaFiscal.class);
 
-        //salvando a nota fiscal
-        //try with resouces - fecha a conexao ao final
-        try ( PreparedStatement query = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            query.setDate(1, (Date) entity.getDataEmissao());
-            query.setInt(2, entity.getCliente().getId());
-            query.executeUpdate();
+            query.setParameter("cliente", cliente);
 
-            try ( ResultSet rs = query.getGeneratedKeys()) {
-                if (rs.next()) {  // Move o cursor para a primeira linha, pois pro padrao vem antes
-                    entity.setId(rs.getInt(1)); //coloca o id no produto            }
-                }
+            return query.getResultList();
 
+        } finally {
+            em.close();
+        }
+
+    }
+
+    //Calcular o valor total de uma nota fiscal com base nos itens.
+    public Double calcularValorTotalNota(NotaFiscal nota) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<Double> query = em.createQuery(""
+                    + "SELECT SUM(i.quantidade * i.valorItem)  "
+                    + "FROM ItemNota i "
+                    + "WHERE i.notaFiscal = :nota",
+                    Double.class);
+
+            query.setParameter("nota", nota);
+
+            return query.getSingleResult();
+
+        } finally {
+            em.close();
+        }
+
+    }
+
+    //Listar todas as notas fiscais emitidas em um intervalo de datas
+    public List<NotaFiscal> buscarNotaFiscalPorIntervaloData(LocalDate dataInicio, LocalDate dataFim) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<NotaFiscal> query = em.createQuery(
+                    "SELECT n FROM NotaFiscal n WHERE n.dataEmissao BETWEEN :dataInicio AND :dataFim",
+                    NotaFiscal.class);
+
+            query.setParameter("dataInicio", dataInicio);
+            query.setParameter("dataFim", dataFim);
+
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    //Filtrar notas fiscais por cliente e intervalo de datas.
+    public List<NotaFiscal> filtrarNotasPorClienteEIntervaloDeDatas(String nomeCliente, LocalDate dataInicio, LocalDate dataFim) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<NotaFiscal> cq = cb.createQuery(NotaFiscal.class);
+            Root<NotaFiscal> notas = cq.from(NotaFiscal.class);
+
+            // list de predicados)
+            List<Predicate> predicates = new ArrayList<>();
+
+            //se for nulo ele não acrescenta esse predicado
+            if (nomeCliente != null && !nomeCliente.trim().isEmpty()) {
+                predicates.add(cb.like(cb.lower(notas.get("cliente").get("nome")), "%" + nomeCliente.toLowerCase() + "%"));
             }
 
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        //salvando os dados de itens nota
-        List<ItemNota> itemnotas = entity.getListaItens();
-
-        if (itemnotas != null) {
-            for (ItemNota itemDaNota : itemnotas) {
-
-                sql = "INSERT INTO itemnota (quantidade, valorItem, produto_id, notaFiscal_id) values (?, ?, ?, ?);";
-                try ( PreparedStatement query = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    query.setInt(1, itemDaNota.getQuantidade());
-                    query.setDouble(2, itemDaNota.getValorItem());
-                    query.setInt(3, itemDaNota.getProduto().getId());
-                    query.setInt(4, entity.getId());
-
-                    query.executeUpdate();
-
-                    try ( ResultSet rs = query.getGeneratedKeys()) {
-                        if (rs.next()) {  // Move o cursor para a primeira linha, pois pro padrao vem antes
-                            itemDaNota.setId(rs.getInt(1)); //coloca o id no produto            }
-                        }
-
-                    }
-
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
-
-            }
-        }
-
-    }
-
-    @Override
-    public NotaFiscal retrive(Integer pk) {
-        NotaFiscal notaFiscal = null; //produto a ser retornado
-
-        if (pk != null) {
-            String sql = "SELECT id, dataEmissao, cliente_id FROM notafiscal WHERE id = ?";
-
-            try ( PreparedStatement query = con.prepareStatement(sql)) {
-                query.setInt(1, pk);//coloca a pk que foi colocada como parametro do metodo
-
-                try ( ResultSet rs = query.executeQuery()) {
-
-                    if (rs.next()) {//passa o cursor para a primeira linha
-                        notaFiscal = new NotaFiscal();
-                        notaFiscal.setId(rs.getInt("id"));
-                        notaFiscal.setDataEmissao(rs.getDate("dataEmissao"));
-
-                        ClienteDAO clienteDao = new ClienteDAO(con);
-                        notaFiscal.setCliente(clienteDao.retrive(rs.getInt("cliente_id")));                        
-
-                    }
-                }
-
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        return notaFiscal;
-    }
-
-    @Override
-    public void update(NotaFiscal entity) {
-        String sql = "UPDATE notafiscal SET dataEmissao = ?, cliente_id = ? WHERE id = ?";
-
-        try ( PreparedStatement query = con.prepareStatement(sql)) {
-            query.setDate(1, (Date) entity.getDataEmissao());
-            query.setInt(2, entity.getCliente().getId());
-            query.setInt(3, entity.getId());
-            query.executeUpdate();
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    @Override
-    public boolean delete(Integer pk) {
-        String sql = "DELETE FROM notafiscal WHERE id = ?";
-
-        try ( PreparedStatement query = con.prepareStatement(sql)) {
-            query.setInt(1, pk);
-
-            query.executeUpdate();
-            return true;
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public List<NotaFiscal> findAll() {
-        List<NotaFiscal> notasFiscais = new LinkedList<>();
-
-        String sql = "SELECT id, dataEmissao, cliente_id FROM notafiscal";
-
-        try ( PreparedStatement query = con.prepareStatement(sql)) {
-            try ( ResultSet rs = query.executeQuery()) {
-                while (rs.next()) {
-                    NotaFiscal notaFiscal = new NotaFiscal();
-                    notaFiscal.setId(rs.getInt("id"));
-                    notaFiscal.setDataEmissao(rs.getDate("dataEmissao"));
-
-                    ClienteDAO dao = new ClienteDAO(con);
-                    notaFiscal.setCliente(dao.retrive(rs.getInt("cliente_id")));
-
-                    ClienteDAO clienteDao = new ClienteDAO(con);
-                    notaFiscal.setCliente(clienteDao.retrive(rs.getInt("cliente_id")));
-
-                    /*ItemNotaDAO itemNotaDao = new ItemNotaDAO(con);
-                        notaFiscal.setListaItens(itemNotaDao.findAllWithIDNota(rs.getInt("id")));*/
-                    notasFiscais.add(notaFiscal);
-                }
+            //se for nulo ele não acrescenta esse predicado
+            if (dataInicio != null && dataFim != null) {
+                predicates.add(cb.between(notas.get("dataEmissao"), dataInicio, dataFim));
+            } else if (dataInicio != null) { // Filtrar apenas por data inicial
+                predicates.add(cb.greaterThanOrEqualTo(notas.get("dataEmissao"), dataInicio));
+            } else if (dataFim != null) { // Filtrar apenas por data final
+                predicates.add(cb.lessThanOrEqualTo(notas.get("dataEmissao"), dataFim));
             }
 
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+            cq.select(notas).where(predicates.toArray(new Predicate[0]));
 
-        return notasFiscais;
+            return em.createQuery(cq).getResultList();
+        } finally {
+            em.close();
+        }
     }
+
 }

@@ -1,152 +1,90 @@
 package br.com.FuriniSolutions.dao;
 
 import br.com.FuriniSolutions.bean.Produto;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-public class ProdutoDAO implements Dao<Integer, Produto> { // <o tipo de dados da PK, o tipo de dados que ela vai informar ou receber>
+public class ProdutoDAO extends GenericDAO<Produto> {
 
-    protected Connection con;
-
-    public ProdutoDAO(Connection con) {
-        this.con = con;
+    public ProdutoDAO() {
+        super(Produto.class);
     }
 
-    @Override
-    public void create(Produto entity) {
-        String sql = "INSERT INTO produto (descricao, valor) values (?, ?);";
+    public List<Produto> buscarPorDescricao(String descricao) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            String jpql = "SELECT p FROM Produto p WHERE p.descricao LIKE :descricao";
+            TypedQuery<Produto> query = em.createQuery(jpql, Produto.class);
+            query.setParameter("descricao", "%" + descricao + "%"); // Busca parcial
+            return query.getResultList();
 
-        //try with resouces - fecha a conexao ao final
-        try ( PreparedStatement query = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            query.setString(1, entity.getDescricao());
-            query.setDouble(2, entity.getValor());
-            query.executeUpdate();
+        } finally {
+            em.close();
+        }
 
-            ResultSet rs = query.getGeneratedKeys();//pega a chave gerada pelo banco
+    }
 
-            if (rs.next()) {  // Move o cursor para a primeira linha
-                entity.setId(rs.getInt(1)); //coloca o id no produto            }
+    //Listar todos os produtos com valor acima de um determinado valor.
+    public List<Produto> buscarProdutoValorMinimo(double min) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<Produto> query = em.createQuery(""
+                    + "SELECT p "
+                    + "FROM Produto p "
+                    + "WHERE p.valor > :minimo",
+                    Produto.class);
+
+            query.setParameter("minimo", min);
+
+            return query.getResultList();
+
+        } finally {
+            em.close();
+        }
+
+    }
+
+    //Filtrar produtos por descrição e valor mínimo.
+    public List<Produto> filtrarProdutosPorDescricaoEValorMinimo(String descricao, Double valorMin) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            // cria o CriteriaBuilder
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+
+            // cria a query para retornar uma lista de produtos
+            CriteriaQuery<Produto> cq = cb.createQuery(Produto.class);
+
+            // define a entidade raiz 
+            Root<Produto> produto = cq.from(Produto.class);
+
+            // cria lista de predicados (filtros)
+            List<Predicate> predicates = new ArrayList<>();
+
+            // filtra a descrição (LIKE %***%)
+            //se for nulo ele não acrescenta esse predicado
+            if (descricao != null && !descricao.isEmpty()) {
+                predicates.add(cb.like(cb.lower(produto.get("descricao")), "%" + descricao.toLowerCase() + "%"));
             }
-            rs.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
 
-    }
-
-    @Override
-    public Produto retrive(Integer pk) {
-        Produto produto = null; //produto a ser retornado
-
-        if (pk != null) {
-            String sql = "SELECT id, descricao, valor FROM produto WHERE id = ?";
-
-            try ( PreparedStatement query = con.prepareStatement(sql)) {
-                query.setInt(1, pk);//coloca a pk que foi colocada como parametro do metodo
-
-                ResultSet rs = query.executeQuery();
-
-                if (rs.next()) {//passa o cursor para a primeira linha
-                    produto = new Produto();//instanciando um produto com os dados recebidos
-                    produto.setId(rs.getInt("id"));
-                    produto.setDescricao(rs.getString("descricao"));
-                    produto.setValor(rs.getDouble("valor"));
-                }
-                rs.close();
-
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+            // filtra de valor mínimo (greaterThanOrEqualTo para pegar valores maiores ou iguais)
+            //se for nulo ele não acrescenta esse predicado
+            if (valorMin != null) {
+                predicates.add(cb.greaterThanOrEqualTo(produto.get("valor"), valorMin));
             }
+
+            // adsciona os filtros na consulta
+            cq.select(produto).where(predicates.toArray(new Predicate[0]));
+
+            return em.createQuery(cq).getResultList();
+        } finally {
+            em.close();
         }
-
-        return produto;
-    }
-
-    @Override
-    public void update(Produto entity) {
-        String sql = "UPDATE produto SET descricao = ?, valor = ? WHERE id = ?";
-
-        try ( PreparedStatement query = con.prepareStatement(sql)) {
-            query.setString(1, entity.getDescricao());
-            query.setDouble(2, entity.getValor());
-            query.setInt(3, entity.getId());
-            query.executeUpdate();
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    @Override
-    public boolean delete(Integer pk) {
-        String sql = "DELETE FROM produto WHERE id = ?";
-
-        try ( PreparedStatement query = con.prepareStatement(sql)) {
-            query.setInt(1, pk);
-
-            query.executeUpdate();
-
-            return true;
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public List<Produto> findAll() {
-        List<Produto> produtos = new LinkedList<>();
-
-        String sql = "SELECT id, descricao, valor FROM produto";
-
-        try ( PreparedStatement query = con.prepareStatement(sql)) {
-            ResultSet rs = query.executeQuery();
-
-            while (rs.next()) {
-                Produto produto = new Produto();
-                produto.setId(rs.getInt("id"));
-                produto.setDescricao(rs.getString("descricao"));
-                produto.setValor(rs.getDouble("valor"));
-
-                produtos.add(produto);
-            }
-            rs.close();
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        return produtos;
-
-    }
-
-    public List<Produto> buscarPorDescricao(String descricao) throws SQLException {
-        List<Produto> produtos = new ArrayList<>();
-        String sql = "SELECT * FROM produto WHERE descricao LIKE ?";
-
-        try ( PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setString(1, "%" + descricao + "%"); // Busca parcial
-            try ( ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Produto produto = new Produto();
-                    produto.setId(rs.getInt("id"));
-                    produto.setDescricao(rs.getString("descricao"));
-                    produto.setValor(rs.getDouble("valor"));
-                    // Preenche outros atributos, se necessário
-
-                    produtos.add(produto);
-                }
-            }
-        }
-
-        return produtos;
     }
 
 }

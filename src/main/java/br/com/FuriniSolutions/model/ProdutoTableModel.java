@@ -1,6 +1,5 @@
 package br.com.FuriniSolutions.model;
 
-import br.com.FuriniSolutions.bean.Cliente;
 import br.com.FuriniSolutions.bean.Produto;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -76,6 +75,11 @@ public class ProdutoTableModel extends AbstractTableModel {
 
     public void setProdutos(List<Produto> produtos) {
         this.linhas = produtos;
+    }
+    
+    public void clear() {
+        this.linhas.clear();  // Remove todos os itens da lista
+        fireTableDataChanged();   // Atualiza a tabela
     }
 
 }

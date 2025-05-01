@@ -1,7 +1,6 @@
 package br.com.FuriniSolutions.model;
 
 import br.com.FuriniSolutions.bean.ItemNota;
-import br.com.FuriniSolutions.bean.Produto;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,9 +93,9 @@ public class ItemNotaTableModel extends AbstractTableModel {
         return this.linhas;
     }
     
-    public void removeAll() {
+    public void clear() {
         linhas.clear(); // Limpa a lista de dados
         fireTableDataChanged(); // Notifica a tabela que os dados foram removidos
-    }
+    }   
 
 }

@@ -2,7 +2,6 @@ package br.com.FuriniSolutions.model;
 
 import br.com.FuriniSolutions.bean.NotaFiscal;
 import br.com.FuriniSolutions.util.DataUtil;
-import br.com.FuriniSolutions.util.Observer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -13,7 +12,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class NotaFiscalTableModel extends AbstractTableModel {
 
-    private List<NotaFiscal>linhas = new ArrayList<>();
+    private List<NotaFiscal> linhas = new ArrayList<>();
     private String[] colunas = {"ID", "Cliente", "Data emissão"};
 
     @Override
@@ -35,7 +34,7 @@ public class NotaFiscalTableModel extends AbstractTableModel {
             case 1 ->
                 nota.getCliente().getNome();
             case 2 ->
-                DataUtil.formatarData(nota.getDataEmissao());            
+                DataUtil.formatarData(nota.getDataEmissao());
             default ->
                 throw new IllegalArgumentException("Coluna inválida: " + coluna);
         };
@@ -86,14 +85,14 @@ public class NotaFiscalTableModel extends AbstractTableModel {
             fireTableRowsUpdated(rowIndex, rowIndex);
         }
     }
-    
-    public List<NotaFiscal> getlist(){
+
+    public List<NotaFiscal> getlist() {
         return this.linhas;
     }
-    
-    public void removeAll() {
-        linhas.clear(); // Limpa a lista de dados
-        fireTableDataChanged(); // Notifica a tabela que os dados foram removidos
-    }    
+
+    public void clear() {
+        this.linhas.clear();  // Remove todos os itens da lista
+        fireTableDataChanged();   // Atualiza a tabela
+    }
 
 }
